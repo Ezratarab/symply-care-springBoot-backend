@@ -43,7 +43,6 @@ public class DTO {
 
     private String country;
 
-
     private String street;
 
     @NotNull(message = "Birth Date should not be null")

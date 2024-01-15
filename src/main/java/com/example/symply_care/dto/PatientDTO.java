@@ -13,6 +13,5 @@ public class PatientDTO extends DTO {
     private List<Inquiries> inquiriesList;
     private List<Doctor> doctors;
     private List<Appointments> appointments;
-
 }
 

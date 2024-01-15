@@ -168,6 +168,9 @@ public class PatientService {
         List<Doctor> doctors = patient.getDoctors();
         doctors.add(doctor);
         patient.setDoctors(doctors);
+       List<Patient> patients = doctor.getPatients();
+       patients.add(patient);
+       doctor.setPatients(patients);
         return doctors.stream().
                 map(doctorService::mapDoctorToDoctorDTO)
                 .collect(Collectors.toList());
