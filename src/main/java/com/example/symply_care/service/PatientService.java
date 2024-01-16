@@ -110,13 +110,13 @@ public class PatientService {
         return mapPatientToPatientDTO(patient);
     }
     @Transactional
-
     public void deletePatient(Long id) throws Exception {
         Optional<Patient> optionalPatient = patientRepository.findById(id);
         if (!optionalPatient.isPresent()) {
             throw new Exception("Patient not found with ID: " + id);
         }
         Patient patient = optionalPatient.get();
+        deletePatientFromDoctors(id);
         patientRepository.delete(patient);
     }
     @Transactional
@@ -201,4 +201,30 @@ public class PatientService {
         return inquiries;
     }
 
+    @Transactional
+    public void deletePatientFromDoctors(Long patientId) {
+        List<Doctor> doctors = doctorRepository.findAll();
+        for (Doctor doctor : doctors) {
+            doctorService.deletePatientFromDoctor(doctor.getId(), patientId);
+        }
+    }
+    @Transactional
+    public void deleteDoctorFromPatients(Long doctorId, Long patientId) {
+        Optional<Patient> optionalPatient = patientRepository.findById(patientId);
+
+        if (optionalPatient.isPresent()) {
+            Patient patient = optionalPatient.get();
+            List<Doctor> doctors = patient.getDoctors();
+
+            Iterator<Doctor> iterator = doctors.iterator();
+            while (iterator.hasNext()) {
+                Doctor doctor = iterator.next();
+                if (doctor.getId().equals(doctorId)) {
+                    iterator.remove();
+                    break;
+                }
+            }
+            patient.setDoctors(doctors);
+        }
+    }
 }

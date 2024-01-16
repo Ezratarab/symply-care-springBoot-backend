@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import javax.validation.Valid;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -76,7 +79,6 @@ public class DoctorService {
         doctor.setHospital(doctorDTO.getHospital());
         doctor.setSpecialization(doctorDTO.getSpecialization());
         doctor.setBirthDay(doctorDTO.getBirthDay());
-        doctor.setImageData(doctorDTO.getImageData());
         doctor.setInquiries(doctorDTO.getInquiriesList());
         doctor.setPatients(doctorDTO.getPatients());
         doctor.setAppointments(doctorDTO.getAppointments());
@@ -130,6 +132,7 @@ public class DoctorService {
             throw new Exception("Doctor not found with ID: " + id);
         }
         Doctor doctor = optionalDoctor.get();
+        deleteDoctorFromPatients(id);
         doctorRepository.delete(doctor);
     }
     @Transactional
@@ -189,6 +192,38 @@ public class DoctorService {
             throw new NoSuchElementException("The date has already passed");
         }
     }
+
+    @Transactional
+    public void deletePatientFromDoctor(Long doctorId, Long patientId) {
+        Optional<Doctor> optionalDoctor = doctorRepository.findById(doctorId);
+
+        if (optionalDoctor.isPresent()) {
+            Doctor doctor = optionalDoctor.get();
+            List<Patient> patients = doctor.getPatients();
+
+            Iterator<Patient> iterator = patients.iterator();
+            while (iterator.hasNext()) {
+                Patient patient = iterator.next();
+                if (patient.getId().equals(patientId)) {
+                    iterator.remove();
+                    break;
+                }
+            }
+            doctor.setPatients(patients);
+        }
+    }
+    @Transactional
+    public void deleteDoctorFromPatients(Long id) {
+        Optional<Doctor> doctor = doctorRepository.findById(id);
+        List<Patient> patients = doctor.get().getPatients();
+
+        for (Patient patient : patients) {
+            patientService.deleteDoctorFromPatients(doctor.get().getId(),patient.getId());
+        }
+
+    }
+
+
 
 }
 
