@@ -57,27 +57,27 @@ public class DoctorController {
         }
     }
 
-    @GetMapping("/doctor:{id}/patients")
+    @GetMapping("/doctor/{id}/patients")
     public ResponseEntity<List<PatientDTO>> getPatientsOfDoctor(@PathVariable Long id){
         return ResponseEntity.ok(doctorService.getPatientsOfDoctor(id));
     }
 
 
-    @GetMapping("/doctor:{id}/inquiries")
+    @GetMapping("/doctor/{id}/inquiries")
     public ResponseEntity<List<Inquiries>> getInquiriesOfDoctor(@PathVariable Long id){
         return ResponseEntity.ok(doctorService.getInquiriesOfDoctor(id));
     }
-    @GetMapping("/doctor:{id}/appointments")
+    @GetMapping("/doctor/{id}/appointments")
     public ResponseEntity<List<Appointments>> getAppointmentsOfDoctor(@PathVariable Long id){
         return ResponseEntity.ok(doctorService.getAppointmentsOfDoctor(id));
     }
 
-    @PostMapping("/doctor:{doctorID}/addPatient")
+    @PostMapping("/doctor/{doctorID}/addPatient")
     public ResponseEntity<List<PatientDTO>> addPatientToDoctor(@PathVariable Long doctorID,@RequestBody @Valid Long patientID){
         return ResponseEntity.ok(doctorService.addPatientToDoctor(doctorID,patientID));
     }
 
-    @PostMapping("/doctor:{doctorID}/addAppointment")
+    @PostMapping("/doctor/{doctorID}/addAppointment")
     public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@RequestBody @Valid Appointments appointment){
         return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointment));
     }

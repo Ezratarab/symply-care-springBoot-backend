@@ -2,13 +2,11 @@ package com.example.symply_care.service;
 
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
-import com.example.symply_care.entity.Appointments;
-import com.example.symply_care.entity.Doctor;
-import com.example.symply_care.entity.Inquiries;
-import com.example.symply_care.entity.Patient;
+import com.example.symply_care.entity.*;
 import com.example.symply_care.repository.DoctorRepository;
 import com.example.symply_care.repository.PatientRepository;
-import com.example.symply_care.repository.UserRepository;
+import com.example.symply_care.repository.RoleRepository;
+import com.example.symply_care.repository.UsersRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -23,14 +21,19 @@ import java.util.stream.Collectors;
 public class PatientService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+
+    private final UsersRepository usersRepository;
+    private final RoleRepository roleRepository;
     @Autowired
     @Lazy
     private DoctorService doctorService;
 
 
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository) {
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
+        this.usersRepository = usersRepository;
+        this.roleRepository=roleRepository;
     }
 
     @Transactional
@@ -44,6 +47,7 @@ public class PatientService {
             patientDTO.setCity(patient.getCity());
             patientDTO.setCountry(patient.getCountry());
             patientDTO.setStreet(patient.getStreet());
+            System.out.println(patient.getFirstName());
             patientDTO.setBirthDay(patient.getBirthDay());
             patientDTO.setImageData(patient.getImageData());
             patientDTO.setDoctors(patient.getDoctors());
@@ -72,11 +76,19 @@ public class PatientService {
         patient.setAppointments(patientDTO.getAppointments());
         return patient;
     }
-    @Transactional
 
+    @Transactional
     public PatientDTO createPatient(PatientDTO patientDTO) {
         Patient patient = mapPatientDTOToPatient(patientDTO);
         patientRepository.save(patient);
+        Users user = new Users();
+        user.setId(patient.getId());
+        user.setEmail(patient.getEmail());
+        user.setPassword(patient.getPassword());
+        List<Role> userRoles = user.getRoles();
+        userRoles.add(roleRepository.findByRole("PATIENT"));
+        user.setRoles(userRoles);
+        usersRepository.save(user);
         return patientDTO;
     }
     @Transactional
@@ -118,6 +130,8 @@ public class PatientService {
         Patient patient = optionalPatient.get();
         deletePatientFromDoctors(id);
         patientRepository.delete(patient);
+        Optional<Users> user = usersRepository.findById(id);
+        usersRepository.delete(user.get());
     }
     @Transactional
 

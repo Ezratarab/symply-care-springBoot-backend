@@ -1,4 +1,4 @@
-package com.example.symply_care.config;
+package com.example.symply_care.util;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

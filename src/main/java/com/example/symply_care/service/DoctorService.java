@@ -2,22 +2,16 @@ package com.example.symply_care.service;
 
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
-import com.example.symply_care.entity.Appointments;
-import com.example.symply_care.entity.Doctor;
-import com.example.symply_care.entity.Inquiries;
-import com.example.symply_care.entity.Patient;
+import com.example.symply_care.entity.*;
 import com.example.symply_care.repository.DoctorRepository;
 import com.example.symply_care.repository.PatientRepository;
-import com.example.symply_care.repository.UserRepository;
+import com.example.symply_care.repository.RoleRepository;
+import com.example.symply_care.repository.UsersRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,13 +21,17 @@ public class DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final UsersRepository usersRepository;
+    private final RoleRepository roleRepository;
     @Autowired
     @Lazy
     private PatientService patientService;
 
-    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository) {
+    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
+        this.usersRepository=usersRepository;
+        this.roleRepository=roleRepository;
     }
 
     @Transactional
@@ -46,8 +44,8 @@ public class DoctorService {
             doctorDTO.setLastName(doctor.getLastName());
             doctorDTO.setEmail(doctor.getEmail());
             doctorDTO.setCity(doctor.getCity());
-            doctorDTO.setCountry(doctor.getCountry());
             doctorDTO.setStreet(doctor.getStreet());
+            doctorDTO.setCountry(doctor.getCountry());
             doctorDTO.setHMO(doctor.getHMO());
             doctorDTO.setExperience(doctor.getExperience());
             doctorDTO.setHospital(doctor.getHospital());
@@ -89,6 +87,14 @@ public class DoctorService {
     public DoctorDTO createDoctor(DoctorDTO doctorDTO) {
         Doctor doctor = mapDoctorDTOToDoctor(doctorDTO);
         doctorRepository.save(doctor);
+        Users user = new Users();
+        user.setId(doctor.getId());
+        user.setEmail(doctor.getEmail());
+        user.setPassword(doctor.getPassword());
+        List<Role> userRoles = user.getRoles();
+        userRoles.add(roleRepository.findByRole("DOCTOR"));
+        user.setRoles(userRoles);
+        usersRepository.save(user);
         return doctorDTO;
     }
 
@@ -104,7 +110,6 @@ public class DoctorService {
     }
 
     @Transactional
-
     public DoctorDTO getDoctorByID(Long id) {
         DoctorDTO doctorDTO = mapDoctorToDoctorDTO(doctorRepository.findById(id).orElse(null));
         if (doctorDTO != null)
@@ -113,7 +118,6 @@ public class DoctorService {
     }
 
     @Transactional
-
     public DoctorDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
         if (doctorDTO == null || doctorDTO.getEmail() == null) {
             throw new IllegalArgumentException("Invalid Doctor data.");
@@ -125,7 +129,6 @@ public class DoctorService {
         return mapDoctorToDoctorDTO(doctor);
     }
     @Transactional
-
     public void deleteDoctor(Long id) throws Exception {
         Optional<Doctor> optionalDoctor = doctorRepository.findById(id);
         if (!optionalDoctor.isPresent()) {
@@ -134,6 +137,8 @@ public class DoctorService {
         Doctor doctor = optionalDoctor.get();
         deleteDoctorFromPatients(id);
         doctorRepository.delete(doctor);
+        Optional<Users> user = usersRepository.findById(doctor.getId());
+        usersRepository.delete(user.get());
     }
     @Transactional
     public List<PatientDTO> getPatientsOfDoctor(Long id) {

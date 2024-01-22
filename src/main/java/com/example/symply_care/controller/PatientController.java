@@ -34,17 +34,17 @@ public class PatientController {
         return ResponseEntity.ok(patientService.createPatient(patientDTO));
     }
 
-    @GetMapping("/patient:{id}")
+    @GetMapping("/patient/{id}")
     public ResponseEntity<PatientDTO> getPatientById(@PathVariable Long id) throws Exception {
         return ResponseEntity.ok(patientService.getPatientByID(id));
     }
 
-    @PutMapping("/updatePatient:{id}")
+    @PutMapping("/updatePatient/{id}")
     public ResponseEntity<PatientDTO> updatePatient(@PathVariable Long id, @RequestBody @Valid PatientDTO patientDTO) throws Exception {
         return ResponseEntity.ok(patientService.updatePatient(id, patientDTO));
     }
 
-    @DeleteMapping("/deletePatient:{id}")
+    @DeleteMapping("/deletePatient/{id}")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
         patientService.deletePatientFromDoctors(id);
         try {
@@ -55,36 +55,36 @@ public class PatientController {
         }
     }
 
-    @GetMapping("/patient:{id}/doctors")
+    @GetMapping("/patient/{id}/doctors")
     public ResponseEntity<List<DoctorDTO>> getDoctorsOfPatient(@PathVariable Long id){
         return ResponseEntity.ok(patientService.getDoctorsOfPatient(id));
     }
 
-    @GetMapping("/patient:{id}/inquiries")
+    @GetMapping("/patient/{id}/inquiries")
     public ResponseEntity<List<Inquiries>> getInquiriesOfPatient(@PathVariable Long id){
         return ResponseEntity.ok(patientService.getInquiriesOfPatient(id));
     }
 
-    @GetMapping("/patient:{id}/appointments")
+    @GetMapping("/patient/{id}/appointments")
     public ResponseEntity<List<Appointments>> getAppointmentsOfPatient(@PathVariable Long id){
         return ResponseEntity.ok(patientService.getAppointmentsOfPatient(id));
     }
 
-    @PostMapping("/patient:{id}/addAppointment")
+    @PostMapping("/patient/{id}/addAppointment")
     public ResponseEntity<Appointments> createAppointment(@PathVariable Long id, @RequestBody @Valid Appointments appointment) throws Exception {
         return ResponseEntity.ok(patientService.createAppointment(id, appointment));
     }
 
-    @PostMapping("/patient:{patientID}/addDoctor")
+    @PostMapping("/patient/{patientID}/addDoctor")
     public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID,@RequestBody @Valid Long doctorID){
         return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctorID));
     }
-    @PostMapping("/patient:{patientID}/addAppointment")
+    @PostMapping("/patient/{patientID}/addAppointment")
     public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID,@RequestBody @Valid Appointments appointment){
         return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,appointment));
     }
 
-    @PostMapping("/patient:{patientID}/addInquiry")
+    @PostMapping("/patient/{patientID}/addInquiry")
     public ResponseEntity<List<Inquiries>> addInquiryToPatient(@PathVariable Long patientID,@RequestBody @Valid Inquiries inquiry){
         return ResponseEntity.ok(patientService.addInquiryToPatient(patientID,inquiry));
     }
