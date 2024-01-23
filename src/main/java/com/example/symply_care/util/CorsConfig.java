@@ -21,5 +21,10 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE")  // specify the HTTP methods you want to allow
                 .allowCredentials(true)
                 .maxAge(3600);
+        registry.addMapping("/**")  // this maps all the CRUD operations for /employees endpoint
+                .allowedOrigins(ALLOWED_ORIGIN)
+                .allowedMethods("GET", "POST", "PUT", "DELETE")  // specify the HTTP methods you want to allow
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }

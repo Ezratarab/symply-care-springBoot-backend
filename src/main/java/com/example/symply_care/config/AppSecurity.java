@@ -54,7 +54,7 @@ public class AppSecurity {
 
                 // Configuring authorization for HTTP requests
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/test/**", "/login/**", "/logout/**",
+                        .requestMatchers("/test/**", "/login/**", "/logout/**","/home/**",
                                 "/refresh_token/**","/doctors/**" ,"/patients/**","/home/**","/signup/**","/about/**","/cntactus/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("DOCTOR")
 

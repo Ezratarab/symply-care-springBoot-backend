@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TokenBlackListService {
-    private ConcurrentHashMap<String, Instant> blacklist = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Instant> blacklist = new ConcurrentHashMap<>();
     public void addToBlacklist(String token) {
         blacklist.put(token, Instant.now().plusMillis(10000));
         System.out.println("Token added to blacklist: " + token);

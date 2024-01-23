@@ -48,7 +48,7 @@ public class RefreshTokenService {
         // Find the user by email
         Optional<Users> user = usersRepository.findByEmail(email);
         // If a user doesn't exist, throw an exception or handle accordingly
-        if (user == null) {
+        if (user.isEmpty()) {
             throw new RuntimeException("User not found with email: " + email);
         }
 
@@ -76,6 +76,7 @@ public class RefreshTokenService {
     // delete the refresh token for the user
     // it must be wrapped in a transaction, so that the database is updated, this is done in the refresh() method,
     // see below , which calls creteRefreshToken() method in turn, see above
+   @Transactional
     public void deleteRefreshTokenForUser(String email) {
         Optional<Users> user = usersRepository.findByEmail(email);
         refreshTokenRepository.deleteByUser(user.get());
@@ -114,7 +115,6 @@ public class RefreshTokenService {
         RefreshToken validRefreshToken = refreshTokenEntity.get();
         // if it is not valid, throw an exception or handle accordingly
         if (!verifyExpiration(validRefreshToken)) {
-            System.out.println("Refresh Token has expired. Please login again");
             throw new TokenRefreshException("Refresh token has expired. Please log in again");
         }
 

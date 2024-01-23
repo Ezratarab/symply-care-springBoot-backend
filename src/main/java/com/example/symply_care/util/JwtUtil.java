@@ -76,18 +76,13 @@ public class JwtUtil {
         // display the public key
         System.out.println("publicKey: " + keyPair.getPublic());
 
-        Users user = new Users();
-        user.setEmail(authenticationRequest.getEmail());
-        user.setRoles(userDetails.getAuthorities().stream()
-                .map(authority -> new Role(null, authority.getAuthority(), null))
-                .collect(Collectors.toList())
-        );
-
+        Optional<Users> user = usersRepository.findByEmail(authenticationRequest.getEmail());
+        //TODO: to check if this is okay with Eli
 
         // create claims and set the subject (username)
         Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
         // crete token string by adding the user's roles to the claims
-        return createToken(claims, user);
+        return createToken(claims, user.get());
 
     }
 
