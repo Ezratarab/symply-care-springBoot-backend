@@ -11,7 +11,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,6 +122,13 @@ public class DoctorService {
     }
 
     @Transactional
+    public DoctorDTO getDoctorByEmail(String email) {
+        DoctorDTO doctorDTO = mapDoctorToDoctorDTO(doctorRepository.findByEmail(email).orElse(null));
+        if (doctorDTO != null)
+            return doctorDTO;
+        throw new IllegalArgumentException("Doctor not found");
+    }
+    @Transactional
     public DoctorDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
         if (doctorDTO == null || doctorDTO.getEmail() == null) {
             throw new IllegalArgumentException("Invalid Doctor data.");
@@ -136,9 +147,9 @@ public class DoctorService {
         }
         Doctor doctor = optionalDoctor.get();
         deleteDoctorFromPatients(id);
-        doctorRepository.delete(doctor);
-        Optional<Users> user = usersRepository.findById(doctor.getId());
+        Optional<Users> user = usersRepository.findByEmail(doctor.getEmail());
         usersRepository.delete(user.get());
+        doctorRepository.delete(doctor);
     }
     @Transactional
     public List<PatientDTO> getPatientsOfDoctor(Long id) {
@@ -228,6 +239,32 @@ public class DoctorService {
 
     }
 
+    @Transactional
+    public Users addRoleToDoctor(Long id, String roleName){
+        Role role = roleRepository.findByRole(roleName);
+        Optional<Doctor> doctor = doctorRepository.findById(id);
+        Optional<Users> user = usersRepository.findByEmail(doctor.get().getEmail());
+        List<Role> roles = user.get().getRoles();
+        roles.add(role);
+        user.get().setRoles(roles);
+        Users userNew = user.get();
+        if(user.isPresent()){
+            usersRepository.save(userNew);}
+        return userNew;
+    }
+    public void uploadImage(Long id,MultipartFile file) throws Exception {
+        Optional<Doctor> doctor = doctorRepository.findById(id);
+        try {
+            if (!file.isEmpty()) {
+            doctor.get().setImageData(file.getBytes());
+            doctorRepository.save(doctor.get());
+            System.out.println("File uploaded successfully");
+            }
+
+        } catch (IOException ex) {
+            throw new Exception("Could not store file " + file, ex);
+        }
+    }
 
 
 }

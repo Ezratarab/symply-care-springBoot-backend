@@ -30,13 +30,11 @@ public class JwtUtil {
 
     private final RSAKeysRepository RSAKeysRepository; // Store private keys
 
-    // TODO RSA
     private final KeyPair keyPair; // Injected
 
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
-    // TODO Update JwtUtil to Support Key Rotation
     /*
     Integrating the JWT token handling, with graceful key transition, into
     a system  - requires a few steps:
@@ -77,8 +75,6 @@ public class JwtUtil {
         System.out.println("publicKey: " + keyPair.getPublic());
 
         Optional<Users> user = usersRepository.findByEmail(authenticationRequest.getEmail());
-        //TODO: to check if this is okay with Eli
-
         // create claims and set the subject (username)
         Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
         // crete token string by adding the user's roles to the claims
@@ -87,7 +83,6 @@ public class JwtUtil {
     }
 
     private PrivateKey convertBytesToPrivateKey(byte[] keyBytes) {
-        // TODO RSA - Convert a byte array to PrivateKey
         try {
             // PKCS8EncodedKeySpec: This class represents the DER encoding of a private key, according to the format
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
@@ -113,7 +108,6 @@ public class JwtUtil {
 
 
     // helper method to create a JWT token, used by generateToken() and generateTokenFromUsername() methods
-    // TODO RSA : SignatureAlgorithm: The cryptographic algorithm used to sign the JWT.
     private String createToken(Claims claims, Users user) {
         claims.put("roles", user.getRoles().stream().map(Role::getRole).collect(Collectors.toList()));
         return Jwts.builder()
@@ -161,9 +155,7 @@ public class JwtUtil {
 
     // Extract the username from a JWT token
     public String extractUsername(String token) {
-        // TODO 0, fix error here, extractAllClaims(token) returns null
         // Decode the JWT without verification (note: this doesn't validate the token!)
-        // TODO 0, fix in pom.xml adding <artifactId>java-jwt</artifactId>, see pom.xml
         DecodedJWT jwt = JWT.decode(token);
 
         // sub (Subject): This claim identifies the subject of the token (usually the user).
@@ -219,7 +211,6 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
-    // TODO RSA - Extract all claims from a JWT token, using the PUBLIC key: This implicitly validates the signature
     /*
     This code is designed to validate JWTs using RSA public keys.
     It first tries to validate the token with the current public key,

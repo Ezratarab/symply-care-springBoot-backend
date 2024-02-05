@@ -7,10 +7,15 @@ import com.example.symply_care.repository.DoctorRepository;
 import com.example.symply_care.repository.PatientRepository;
 import com.example.symply_care.repository.RoleRepository;
 import com.example.symply_care.repository.UsersRepository;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -110,6 +115,13 @@ public class PatientService {
         throw new IllegalArgumentException("Patient not found");
     }
     @Transactional
+    public PatientDTO getPatientByEmail(String email) {
+        PatientDTO patientDTO = mapPatientToPatientDTO(patientRepository.findByEmail(email).orElse(null));
+        if (patientDTO != null)
+            return patientDTO;
+        throw new IllegalArgumentException("Patient not found");
+    }
+    @Transactional
 
     public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
         if (patientDTO == null || patientDTO.getEmail() == null) {
@@ -129,9 +141,9 @@ public class PatientService {
         }
         Patient patient = optionalPatient.get();
         deletePatientFromDoctors(id);
-        patientRepository.delete(patient);
-        Optional<Users> user = usersRepository.findById(id);
+        Optional<Users> user = usersRepository.findByEmail(patient.getEmail());
         usersRepository.delete(user.get());
+        patientRepository.delete(patient);
     }
     @Transactional
 
@@ -241,4 +253,32 @@ public class PatientService {
             patient.setDoctors(doctors);
         }
     }
+    @Transactional
+    public Users addRoleToPatient(Long id, String roleName){
+        Role role = roleRepository.findByRole(roleName);
+        System.out.println(roleRepository.findByRole(roleName));
+
+        System.out.println("1------------------------------------");
+        System.out.println(roleName);
+
+        System.out.println(role);
+        Optional<Patient> patient = patientRepository.findById(id);
+        System.out.println("2------------------------------------");
+        Optional<Users> user = usersRepository.findByEmail(patient.get().getEmail());
+        Users userNew = user.get();
+
+        List<Role> roles = userNew.getRoles();
+        roles.add(role);
+        userNew.setRoles(roles);
+        System.out.println("3------------------------------------");
+        System.out.println(userNew.getRoles());
+        System.out.println("5------------------------------------");
+
+        if(userNew != null){
+            System.out.println("4------------------------------------");
+            usersRepository.save(userNew);
+        }
+        return userNew;
+    }
+
 }

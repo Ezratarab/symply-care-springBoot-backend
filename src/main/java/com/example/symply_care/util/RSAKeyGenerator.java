@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
  */
 
 @Component
-// TODO 3: RSA KeyGenerator class
 public class RSAKeyGenerator {
     /*
     Proper RSA key usage in JWT token generation and verification:

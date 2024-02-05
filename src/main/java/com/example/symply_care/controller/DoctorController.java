@@ -4,6 +4,7 @@ import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.Appointments;
 import com.example.symply_care.entity.Inquiries;
+import com.example.symply_care.entity.Users;
 import com.example.symply_care.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -36,9 +38,13 @@ public class DoctorController {
     }
 
 
-    @GetMapping("/doctor/{id}")
+    @GetMapping("/doctor/I{id}")
     public ResponseEntity<DoctorDTO> getDoctorById(@PathVariable Long id) throws Exception {
         return ResponseEntity.ok(doctorService.getDoctorByID(id));
+    }
+    @GetMapping("/doctor/E{email}")
+    public ResponseEntity<DoctorDTO> getDoctorByEmail(@PathVariable String email) throws Exception {
+        return ResponseEntity.ok(doctorService.getDoctorByEmail(email));
     }
 
     @PutMapping("/updateDoctor/{id}")
@@ -80,6 +86,22 @@ public class DoctorController {
     @PostMapping("/doctor/{doctorID}/addAppointment")
     public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@RequestBody @Valid Appointments appointment){
         return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointment));
+    }
+    @PostMapping("/doctor/{doctorID}/addRole")
+    public ResponseEntity<Users> addRoleToDoctor(@PathVariable Long doctorID, @RequestBody @Valid String role){
+        return ResponseEntity.ok(doctorService.addRoleToDoctor(doctorID,role));
+    }
+
+    @PostMapping("/doctor/{doctorID}/addImage")
+    public String uploadImage(@PathVariable Long doctorID, @RequestParam("image") MultipartFile file) {
+        System.out.println("---------------------------------------");
+        System.out.println(file);
+        try {
+            doctorService.uploadImage(doctorID,file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/doctor/{doctorID}";
     }
 
 

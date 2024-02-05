@@ -18,10 +18,6 @@
 </properties>
 <dependencies>
 
-    <!-- Adds the class javax.xml.bind.DatatypeConverter This particular class was part of the Java EE modules,
-and from Java 9 onwards, those modules are not available by default.
-
--->
     <dependency>
         <groupId>javax.xml.bind</groupId>
         <artifactId>jaxb-api</artifactId>

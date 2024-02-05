@@ -26,10 +26,6 @@ import java.util.UUID;
  */
 
 
-/*
-TODO Update JwtUtil to Support Key Rotation :
- To integrate JWT token handling with graceful key transition in your system, which includes the User entity
- */
 
 @Service
 @RequiredArgsConstructor

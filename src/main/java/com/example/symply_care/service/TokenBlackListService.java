@@ -12,7 +12,6 @@ public class TokenBlackListService {
     public void addToBlacklist(String token) {
         blacklist.put(token, Instant.now().plusMillis(10000));
         System.out.println("Token added to blacklist: " + token);
-        // TODO better to implement a mechanism to remove expired tokens from the blacklist
         removeExpiredTokens();
     }
 
