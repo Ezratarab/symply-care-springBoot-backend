@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -96,6 +97,16 @@ public class PatientController {
     @PostMapping("/patient/{patientID}/addRole")
     public ResponseEntity<Users> addRoleToPatient(@PathVariable Long patientID, @RequestBody @jakarta.validation.Valid String role){
         return ResponseEntity.ok(patientService.addRoleToPatient(patientID,role));
+    }
+    @PostMapping("/patient/{patientID}/addImage")
+    public String uploadImage(@PathVariable Long patientID, @RequestParam("image") MultipartFile file) {
+        System.out.println(file);
+        try {
+            patientService.uploadImage(patientID,file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/patient/{patientID}";
     }
 
 }

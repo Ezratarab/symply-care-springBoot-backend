@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -279,6 +281,19 @@ public class PatientService {
             usersRepository.save(userNew);
         }
         return userNew;
+    }
+    public void uploadImage(Long id, MultipartFile file) throws Exception {
+        Optional<Patient> patient = patientRepository.findById(id);
+        try {
+            if (!file.isEmpty()) {
+                patient.get().setImageData(file.getBytes());
+                patientRepository.save(patient.get());
+                System.out.println("File uploaded successfully");
+            }
+
+        } catch (IOException ex) {
+            throw new Exception("Could not store file " + file, ex);
+        }
     }
 
 }

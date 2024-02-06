@@ -34,6 +34,7 @@ public class CustomLogoutHandler implements LogoutSuccessHandler {
         // Extract the JWT token
         String token = request.getHeader(JwtProperties.HEADER_STRING).
                 substring(JwtProperties.HEADER_STRING.length());
+        System.out.println("--------------------------------------");
         tokenBlacklistService.addToBlacklist(token);
 
         // write user logout
