@@ -41,8 +41,6 @@ public class CustomLogoutHandler implements LogoutSuccessHandler {
         if (authentication != null)
             System.out.println("User logged out: " + authentication.getName());
 
-        // Redirect to the login page or other logic
-        //  response.sendRedirect("/index");
 
     }
 }

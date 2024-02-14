@@ -19,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/patients")
 @RequiredArgsConstructor
+
 public class PatientController {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -32,7 +33,7 @@ public class PatientController {
     }
 
     @PostMapping("/addPatient")
-    public ResponseEntity<PatientDTO> createPatient(@RequestBody @Valid PatientDTO patientDTO) throws Exception {
+    public ResponseEntity<PatientDTO> createPatient(@RequestBody PatientDTO patientDTO) throws Exception {
         return ResponseEntity.ok(patientService.createPatient(patientDTO));
     }
 

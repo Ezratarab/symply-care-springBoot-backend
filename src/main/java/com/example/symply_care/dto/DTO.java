@@ -10,6 +10,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
+@MappedSuperclass
 public class DTO {
 
     @NotNull(message = "user id should not be null")
