@@ -129,13 +129,23 @@ public class DoctorService {
         throw new IllegalArgumentException("Doctor not found");
     }
     @Transactional
+    public Doctor updateDoctorDetails(Doctor doctor, DoctorDTO doctorDTO) {
+        doctor.setFirstName(doctorDTO.getFirstName());
+        doctor.setLastName(doctorDTO.getLastName());
+        doctor.setCity(doctorDTO.getCity());
+        doctor.setCountry(doctorDTO.getCountry());
+        doctor.setStreet(doctorDTO.getStreet());
+        doctor.setBirthDay(doctorDTO.getBirthDay());
+        return doctor;
+    }
+    @Transactional
     public DoctorDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
         if (doctorDTO == null || doctorDTO.getEmail() == null) {
             throw new IllegalArgumentException("Invalid Doctor data.");
         }
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
-        doctor.setEmail(doctorDTO.getEmail());
+        doctor = updateDoctorDetails(doctor,doctorDTO);
         doctor = doctorRepository.save(doctor);
         return mapDoctorToDoctorDTO(doctor);
     }

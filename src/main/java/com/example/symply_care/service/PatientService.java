@@ -124,16 +124,26 @@ public class PatientService {
         throw new IllegalArgumentException("Patient not found");
     }
     @Transactional
-
     public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
         if (patientDTO == null || patientDTO.getEmail() == null) {
             throw new IllegalArgumentException("Invalid patient data.");
         }
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
-        patient.setEmail(patientDTO.getEmail());
+        patient = updatePatientDetails(patient,patientDTO);
         patient = patientRepository.save(patient);
         return mapPatientToPatientDTO(patient);
+    }
+
+    @Transactional
+    public Patient updatePatientDetails(Patient patient, PatientDTO patientDTO) {
+        patient.setFirstName(patientDTO.getFirstName());
+        patient.setLastName(patientDTO.getLastName());
+        patient.setCity(patientDTO.getCity());
+        patient.setCountry(patientDTO.getCountry());
+        patient.setStreet(patientDTO.getStreet());
+        patient.setBirthDay(patientDTO.getBirthDay());
+        return patient;
     }
     @Transactional
     public void deletePatient(Long id) throws Exception {
