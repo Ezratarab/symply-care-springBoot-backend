@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -84,8 +85,8 @@ public class DoctorController {
     }
 
     @PostMapping("/doctor/{doctorID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@RequestBody @Valid Appointments appointment){
-        return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointment));
+    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@RequestBody @Valid Long patientID,@RequestBody @Valid Date date ){
+        return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,patientID,date));
     }
     @PostMapping("/doctor/{doctorID}/addRole")
     public ResponseEntity<Users> addRoleToDoctor(@PathVariable Long doctorID, @RequestBody @Valid String role){

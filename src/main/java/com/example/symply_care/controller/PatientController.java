@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -77,19 +78,16 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getAppointmentsOfPatient(id));
     }
 
-    @PostMapping("/patient/{id}/addAppointment")
-    public ResponseEntity<Appointments> createAppointment(@PathVariable Long id, @RequestBody @Valid Appointments appointment) throws Exception {
-        return ResponseEntity.ok(patientService.createAppointment(id, appointment));
-    }
-
     @PostMapping("/patient/{patientID}/addDoctor")
-    public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID,@RequestBody @Valid Long doctorID){
+    public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID, Long doctorID){
         return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctorID));
     }
     @PostMapping("/patient/{patientID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID,@RequestBody @Valid Appointments appointment){
-        return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,appointment));
+    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID,@RequestBody @Valid Long doctorID, @RequestBody @Valid Date date){
+        return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,doctorID, date));
     }
+
+
 
     @PostMapping("/patient/{patientID}/addInquiry")
     public ResponseEntity<List<Inquiries>> addInquiryToPatient(@PathVariable Long patientID,@RequestBody @Valid Inquiries inquiry){

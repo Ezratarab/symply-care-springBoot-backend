@@ -215,17 +215,35 @@ public class PatientService {
     }
 
     @Transactional
-    public List<Appointments> addAppointmentToPatient(Long patientID, Appointments appointment) {
+    public List<Appointments> addAppointmentToPatient(Long patientID,Long doctorID, Date date) {
         Patient patient = patientRepository.findById(patientID)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
         Date now = new Date();
-        if (appointment.getDate().after(now)) {
-            List<Appointments> appointments = patient.getAppointments();
-            appointments.add(appointment);
-            patient.setAppointments(appointments);
-            return appointments;
-        } else {
-            throw new NoSuchElementException("The date has already passed");
+        Optional<Doctor> doctor = doctorRepository.findById(doctorID);
+        if(doctor.isPresent()) {
+            for (Appointments doctorAppointments : doctor.get().getAppointments()) {
+                if (doctorAppointments.getDate().equals(date)) {
+                    throw new NoSuchElementException("The doctor already has appointment in this date");
+                }
+            }
+            if (!date.after(now)) {
+                Appointments appointment = new Appointments();
+                appointment.setPatient(patient);
+                appointment.setDoctor(doctor.get());
+                appointment.setDate(date);
+                List<Appointments> appointments = patient.getAppointments();
+                appointments.add(appointment);
+                patient.setAppointments(appointments);
+                List<Appointments> appointments2 = doctor.get().getAppointments();
+                appointments2.add(appointment);
+                doctor.get().setAppointments(appointments2);
+                return appointments;
+                } else {
+                    throw new NoSuchElementException("The date has already passed");
+                }
+        }
+        else{
+            throw new NoSuchElementException("There is no such doctor: "+ doctor.get().getFirstName() + doctor.get().getLastName());
         }
     }
 

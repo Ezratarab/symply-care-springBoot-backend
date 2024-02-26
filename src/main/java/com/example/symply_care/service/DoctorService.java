@@ -205,18 +205,37 @@ public class DoctorService {
     }
 
     @Transactional
-    public List<Appointments> addAppointmentToDoctor(Long doctorID, Appointments appointment) {
+    public List<Appointments> addAppointmentToDoctor(Long doctorID,Long patientID, Date date) {
         Doctor doctor = doctorRepository.findById(doctorID)
                 .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
         Date now = new Date();
-        if (appointment.getDate().after(now)) {
-            List<Appointments> appointments = doctor.getAppointments();
-            appointments.add(appointment);
-            doctor.setAppointments(appointments);
-            return appointments;
-        } else {
-            throw new NoSuchElementException("The date has already passed");
+        Optional<Patient> patient = patientRepository.findById(patientID);
+        if(patient.isPresent()) {
+            for (Appointments patientAppointments : patient.get().getAppointments()) {
+                if (patientAppointments.getDate().equals(date)) {
+                    throw new NoSuchElementException("The Patient already has appointment in this date");
+                }
+            }
+            if (!date.after(now)) {
+                Appointments appointment = new Appointments();
+                appointment.setPatient(patient.get());
+                appointment.setDoctor(doctor);
+                appointment.setDate(date);
+                List<Appointments> appointments = patient.get().getAppointments();
+                appointments.add(appointment);
+                patient.get().setAppointments(appointments);
+                List<Appointments> appointments2 = doctor.getAppointments();
+                appointments2.add(appointment);
+                doctor.setAppointments(appointments2);
+                return appointments;
+            } else {
+                throw new NoSuchElementException("The date has already passed");
+            }
         }
+        else{
+            throw new NoSuchElementException("There is no such patient: "+ patient.get().getFirstName() + patient.get().getLastName());
+        }
+
     }
 
     @Transactional
