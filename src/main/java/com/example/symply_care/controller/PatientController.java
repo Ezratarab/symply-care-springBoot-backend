@@ -83,11 +83,9 @@ public class PatientController {
         return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctorID));
     }
     @PostMapping("/patient/{patientID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID,@RequestBody @Valid Long doctorID, @RequestBody @Valid Date date){
-        return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,doctorID, date));
+    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID, @Valid Appointments appointments){
+        return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,appointments.doctor.getId(), appointments.getDate()));
     }
-
-
 
     @PostMapping("/patient/{patientID}/addInquiry")
     public ResponseEntity<List<Inquiries>> addInquiryToPatient(@PathVariable Long patientID,@RequestBody @Valid Inquiries inquiry){

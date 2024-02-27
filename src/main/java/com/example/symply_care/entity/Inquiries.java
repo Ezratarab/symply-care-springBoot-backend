@@ -36,7 +36,5 @@ public class Inquiries {
     private List<Prediction> predictions;
 
     @Column(nullable = false)
-    @ElementCollection
-    @JsonIgnore
-    private List<Symptom> symptoms;
+    private Symptom symptoms;
 }
