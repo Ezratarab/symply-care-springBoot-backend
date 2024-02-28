@@ -3,10 +3,7 @@ package com.example.symply_care.service;
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.*;
-import com.example.symply_care.repository.DoctorRepository;
-import com.example.symply_care.repository.PatientRepository;
-import com.example.symply_care.repository.RoleRepository;
-import com.example.symply_care.repository.UsersRepository;
+import com.example.symply_care.repository.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +28,18 @@ public class PatientService {
 
     private final UsersRepository usersRepository;
     private final RoleRepository roleRepository;
+    private final InquiriesRepository inquiriesRepository;
     @Autowired
     @Lazy
     private DoctorService doctorService;
 
 
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository) {
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.usersRepository = usersRepository;
         this.roleRepository=roleRepository;
+        this.inquiriesRepository = inquiriesRepository;
     }
 
     @Transactional
@@ -248,13 +247,25 @@ public class PatientService {
     }
 
     @Transactional
-    public List<Inquiries> addInquiryToPatient(Long patientID, Inquiries inquiry){
+    public List<Inquiries> addInquiryToPatient(Long patientID, Inquiries inquiry) {
         Patient patient = patientRepository.findById(patientID)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
+
         List<Inquiries> inquiries = patient.getInquiries();
-        inquiries.add(inquiry);
-        patient.setInquiries(inquiries);
-        return inquiries;
+        inquiry.setHasAnswered(false);
+        Optional<Doctor> doctorOptional = doctorRepository.findById(inquiry.getDoctor().getId());
+        if (doctorOptional.isPresent()) {
+            Doctor doctor = doctorOptional.get();
+            List<Inquiries> doctorInquiries = doctor.getInquiries();
+            doctorInquiries.add(inquiry);
+            doctor.setInquiries(doctorInquiries);
+            inquiries.add(inquiry);
+            patient.setInquiries(inquiries);
+            inquiriesRepository.save(inquiry);
+            return inquiries;
+        } else {
+            throw new NoSuchElementException("Doctor not found with id: " + inquiry.getDoctor().getId());
+        }
     }
 
     @Transactional

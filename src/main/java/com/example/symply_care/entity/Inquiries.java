@@ -37,4 +37,7 @@ public class Inquiries {
 
     @Column(nullable = false)
     private Symptom symptoms;
+
+    @Column()
+    private Boolean hasAnswered;
 }

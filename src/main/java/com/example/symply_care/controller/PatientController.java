@@ -79,7 +79,7 @@ public class PatientController {
     }
 
     @PostMapping("/patient/{patientID}/addDoctor")
-    public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID, Long doctorID){
+    public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID, @Valid Long doctorID){
         return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctorID));
     }
     @PostMapping("/patient/{patientID}/addAppointment")
