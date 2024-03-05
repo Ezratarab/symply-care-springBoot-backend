@@ -29,17 +29,19 @@ public class PatientService {
     private final UsersRepository usersRepository;
     private final RoleRepository roleRepository;
     private final InquiriesRepository inquiriesRepository;
+    private final AppointmentsRepository appointmentsRepository;
     @Autowired
     @Lazy
     private DoctorService doctorService;
 
 
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository) {
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.usersRepository = usersRepository;
         this.roleRepository=roleRepository;
         this.inquiriesRepository = inquiriesRepository;
+        this.appointmentsRepository = appointmentsRepository;
     }
 
     @Transactional
@@ -57,8 +59,8 @@ public class PatientService {
             patientDTO.setBirthDay(patient.getBirthDay());
             patientDTO.setImageData(patient.getImageData());
             patientDTO.setDoctors(patient.getDoctors());
-            patientDTO.setInquiriesList(patient.getInquiries());
-            patientDTO.setAppointments(patient.getAppointments());
+            patientDTO.setInquiriesList(getInquiriesOfPatient(patient.getId()));
+            patientDTO.setAppointments(getAppointmentsOfPatient(patient.getId()));
             return patientDTO;
         }
         return null;
@@ -77,9 +79,9 @@ public class PatientService {
         patient.setBirthDay(patientDTO.getBirthDay());
         patient.setImageData(patientDTO.getImageData());
         patient.setPassword(patientDTO.getPassword());
-        patient.setInquiries(patientDTO.getInquiriesList());
+        patient.setInquiries(getInquiriesOfPatient(patientDTO.getId()));
         patient.setDoctors(patientDTO.getDoctors());
-        patient.setAppointments(patientDTO.getAppointments());
+        patient.setAppointments(getAppointmentsOfPatient(patientDTO.getId()));
         return patient;
     }
 
@@ -169,27 +171,38 @@ public class PatientService {
                 .collect(Collectors.toList());
     }
     @Transactional
-
     public List<Inquiries> getInquiriesOfPatient(Long id) {
+        List<Inquiries> userInquiries = new ArrayList<>();
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + id));
-
-        return patient.getInquiries();
+        List<Inquiries> patientInquiries = patient.getInquiries();
+        for (Inquiries inquiry : patientInquiries) {
+            Inquiries masterInquiry = inquiriesRepository.findById(inquiry.getId())
+                    .orElseThrow(() -> new NoSuchElementException("Inquiry not found with id: " + inquiry.getId()));
+            userInquiries.add(masterInquiry);
+        }
+        System.out.println(userInquiries);
+        return userInquiries;
     }
-    @Transactional
 
     public List<Appointments> getAppointmentsOfPatient(Long id) {
+        List<Appointments> userAppointments = new ArrayList<>();
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + id));
-
-        return patient.getAppointments();
+        List<Appointments> patientAppointments = patient.getAppointments();
+        for (Appointments appointment : patientAppointments) {
+            Appointments masterAppointment = appointmentsRepository.findById(appointment.getId())
+                    .orElseThrow(() -> new NoSuchElementException("Appointment not found with id: " + appointment.getId()));
+            userAppointments.add(masterAppointment);
+        }
+        System.out.println(userAppointments);
+        return userAppointments;
     }
     @Transactional
 
     public Appointments createAppointment(Long id, Appointments appointment) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + id));
-
         List<Appointments> appointments = patient.getAppointments();
         appointments.add(appointment);
         patient.setAppointments(appointments);
@@ -298,25 +311,13 @@ public class PatientService {
     public Users addRoleToPatient(Long id, String roleName){
         Role role = roleRepository.findByRole(roleName);
         System.out.println(roleRepository.findByRole(roleName));
-
-        System.out.println("1------------------------------------");
-        System.out.println(roleName);
-
-        System.out.println(role);
         Optional<Patient> patient = patientRepository.findById(id);
-        System.out.println("2------------------------------------");
         Optional<Users> user = usersRepository.findByEmail(patient.get().getEmail());
         Users userNew = user.get();
-
         List<Role> roles = userNew.getRoles();
         roles.add(role);
         userNew.setRoles(roles);
-        System.out.println("3------------------------------------");
-        System.out.println(userNew.getRoles());
-        System.out.println("5------------------------------------");
-
         if(userNew != null){
-            System.out.println("4------------------------------------");
             usersRepository.save(userNew);
         }
         return userNew;
