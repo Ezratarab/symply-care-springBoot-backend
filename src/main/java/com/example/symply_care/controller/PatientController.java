@@ -3,6 +3,7 @@ package com.example.symply_care.controller;
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.Appointments;
+import com.example.symply_care.entity.Doctor;
 import com.example.symply_care.entity.Inquiries;
 import com.example.symply_care.entity.Users;
 import com.example.symply_care.service.PatientService;
@@ -79,8 +80,8 @@ public class PatientController {
     }
 
     @PostMapping("/patient/{patientID}/addDoctor")
-    public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID, @Valid Long doctorID){
-        return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctorID));
+    public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID,@RequestBody @Valid DoctorDTO doctor){
+        return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctor.getId()));
     }
     @PostMapping("/patient/{patientID}/addAppointment")
     public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID, @Valid Appointments appointments){

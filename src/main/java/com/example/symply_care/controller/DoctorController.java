@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -80,13 +81,13 @@ public class DoctorController {
     }
 
     @PostMapping("/doctor/{doctorID}/addPatient")
-    public ResponseEntity<List<PatientDTO>> addPatientToDoctor(@PathVariable Long doctorID,@RequestBody @Valid Long patientID){
-        return ResponseEntity.ok(doctorService.addPatientToDoctor(doctorID,patientID));
+    public ResponseEntity<List<PatientDTO>> addPatientToDoctor(@PathVariable Long doctorID,@RequestBody @Valid PatientDTO patient){
+        return ResponseEntity.ok(doctorService.addPatientToDoctor(doctorID,patient.getId()));
     }
 
     @PostMapping("/doctor/{doctorID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@RequestBody @Valid Long patientID,@RequestBody @Valid Date date ){
-        return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,patientID,date));
+    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@Valid @RequestBody Appointments appointment ){
+        return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointment.patient.getId(),appointment.getDate()));
     }
     @PostMapping("/doctor/{doctorID}/addRole")
     public ResponseEntity<Users> addRoleToDoctor(@PathVariable Long doctorID, @RequestBody @Valid String role){

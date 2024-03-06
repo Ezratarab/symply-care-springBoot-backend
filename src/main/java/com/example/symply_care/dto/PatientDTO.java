@@ -42,6 +42,7 @@ public class PatientDTO{
     @NotBlank(message = "password should not be blank")
     @NotEmpty(message = "password should not be empty")
     private String password;
+
     private String city;
 
     private String country;
