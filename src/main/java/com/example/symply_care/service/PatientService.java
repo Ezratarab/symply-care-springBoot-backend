@@ -67,7 +67,10 @@ public class PatientService {
         }
         return null;
     }
-
+    public Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        return sdf.parse(dateString);
+    }
     @Transactional
     public Patient mapPatientDTOToPatient(PatientDTO patientDTO) {
         Patient patient = new Patient();
@@ -89,7 +92,16 @@ public class PatientService {
 
     @Transactional
     public PatientDTO createPatient(PatientDTO patientDTO) {
-        Patient patient = mapPatientDTOToPatient(patientDTO);
+        Patient patient = new Patient();
+        patient.setId(patientDTO.getId());
+        patient.setFirstName(patientDTO.getFirstName());
+        patient.setLastName(patientDTO.getLastName());
+        patient.setEmail(patientDTO.getEmail());
+        patient.setCity(patientDTO.getCity());
+        patient.setCountry(patientDTO.getCountry());
+        patient.setStreet(patientDTO.getStreet());
+        patient.setBirthDay(patientDTO.getBirthDay());
+        patient.setPassword(patientDTO.getPassword());
         patientRepository.save(patient);
         Users user = new Users();
         user.setId(patient.getId());
@@ -229,7 +241,7 @@ public class PatientService {
     }
 
     @Transactional
-    public List<Appointments> addAppointmentToPatient(Long patientID,Long doctorID, Date date) {
+    public List<Appointments> addAppointmentToPatient(Long patientID,Long doctorID, String date) throws ParseException {
         Patient patient = patientRepository.findById(patientID)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
         Date now = new Date();
@@ -240,7 +252,8 @@ public class PatientService {
                     throw new NoSuchElementException("The doctor already has appointment in this date");
                 }
             }
-            if (!date.after(now)) {
+            Date date2 = convertStringToDate(date);
+            if (!date2.after(now)) {
                 Appointments appointment = new Appointments();
                 appointment.setPatient(patient);
                 appointment.setDoctor(doctor.get());

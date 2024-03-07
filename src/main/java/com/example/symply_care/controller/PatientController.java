@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class PatientController {
     }
 
     @PostMapping("/addPatient")
-    public ResponseEntity<PatientDTO> createPatient(@RequestBody PatientDTO patientDTO) throws Exception {
+    public ResponseEntity<PatientDTO> createPatient(@RequestBody @Valid PatientDTO patientDTO) throws Exception {
         return ResponseEntity.ok(patientService.createPatient(patientDTO));
     }
 
@@ -82,7 +83,7 @@ public class PatientController {
         return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctor.getId()));
     }
     @PostMapping("/patient/{patientID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID, @Valid Appointments appointments){
+    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID, @RequestBody @Valid Appointments appointments) throws ParseException {
         return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,appointments.doctor.getId(), appointments.getDate()));
     }
 

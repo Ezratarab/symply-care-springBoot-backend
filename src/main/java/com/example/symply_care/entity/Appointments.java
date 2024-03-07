@@ -30,6 +30,6 @@ public class Appointments {
     @JoinColumn(name = "patient_id", nullable = false)
     public Patient patient;
 
-    @Column(nullable = false, unique = true)
-    private Date date;
+    @Column(nullable = false, unique = false)
+    private String date;
 }

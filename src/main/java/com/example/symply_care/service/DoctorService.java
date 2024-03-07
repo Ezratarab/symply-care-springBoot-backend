@@ -16,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -240,9 +242,12 @@ public class DoctorService {
                 .map(patientService::mapPatientToPatientDTO)
                 .collect(Collectors.toList());
     }
-
+    public Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        return sdf.parse(dateString);
+    }
     @Transactional
-    public List<Appointments> addAppointmentToDoctor(Long doctorID,Long patientID, Date date) {
+    public List<Appointments> addAppointmentToDoctor(Long doctorID,Long patientID, String date) throws ParseException {
         Doctor doctor = doctorRepository.findById(doctorID)
                 .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
         Date now = new Date();
@@ -253,7 +258,8 @@ public class DoctorService {
                     throw new NoSuchElementException("The Patient already has appointment in this date");
                 }
             }
-            if (!date.after(now)) {
+            Date date2 = convertStringToDate(date);
+            if (!date2.after(now)) {
                 Appointments appointment = new Appointments();
                 appointment.setPatient(patient.get());
                 appointment.setDoctor(doctor);

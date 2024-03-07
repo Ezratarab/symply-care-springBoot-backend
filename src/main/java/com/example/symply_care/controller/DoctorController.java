@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -86,7 +87,7 @@ public class DoctorController {
     }
 
     @PostMapping("/doctor/{doctorID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@Valid @RequestBody Appointments appointment ){
+    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@Valid @RequestBody Appointments appointment ) throws ParseException {
         return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointment.patient.getId(),appointment.getDate()));
     }
     @PostMapping("/doctor/{doctorID}/addRole")
