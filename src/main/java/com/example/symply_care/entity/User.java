@@ -43,6 +43,6 @@ public class User {
     private byte[] imageData;
 
     @DateTimeFormat(pattern="dd/MM/yyyy")
-    private Date birthDay;
+    private String birthDay;
 
 }

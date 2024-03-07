@@ -161,6 +161,43 @@ public class DoctorService {
         usersRepository.delete(user.get());
         doctorRepository.delete(doctor);
     }
+
+    private Doctor convertToDoctor(Map<String, Object> doctorData) {
+        Doctor doctor = new Doctor();
+        doctor.setId((Long) doctorData.get("id"));
+        doctor.setFirstName((String) doctorData.get("firstName"));
+        doctor.setLastName((String) doctorData.get("lastName"));
+        doctor.setEmail((String) doctorData.get("email"));
+        doctor.setCity((String) doctorData.get("city"));
+        doctor.setCountry((String) doctorData.get("country"));
+        doctor.setStreet((String) doctorData.get("street"));
+        doctor.setBirthDay((String) doctorData.get("birthDay"));
+        doctor.setImageData((byte[]) doctorData.get("imageData"));
+        doctor.setPassword((String) doctorData.get("password"));
+        doctor.setSpecialization((String) doctorData.get("specialization"));
+        doctor.setPatients((List<Patient>) doctorData.get("patients"));
+        doctor.setInquiries((List<Inquiries>) doctorData.get("inquiriesList"));
+        doctor.setAppointments((List<Appointments>) doctorData.get("appointments"));
+        return doctor;
+    }
+
+    private Patient convertToPatient(Map<String, Object> patientData) {
+        Patient patient = new Patient();
+        patient.setId((Long) patientData.get("id"));
+        patient.setFirstName((String) patientData.get("firstName"));
+        patient.setLastName((String) patientData.get("lastName"));
+        patient.setEmail((String) patientData.get("email"));
+        patient.setCity((String) patientData.get("city"));
+        patient.setCountry((String) patientData.get("country"));
+        patient.setStreet((String) patientData.get("street"));
+        patient.setBirthDay((String) patientData.get("birthDay"));
+        patient.setImageData((byte[]) patientData.get("imageData"));
+        patient.setPassword((String) patientData.get("password"));
+        patient.setInquiries((List<Inquiries>)patientData.get("inquiriesList"));
+        patient.setDoctors((List<Doctor>) patientData.get("doctors"));
+        patient.setAppointments((List<Appointments>) patientData.get("appointments"));
+        return patient;
+    }
     @Transactional
     public List<PatientDTO> getPatientsOfDoctor(Long id) {
         Doctor doctor = doctorRepository.findById(id)

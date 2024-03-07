@@ -2,10 +2,7 @@ package com.example.symply_care.controller;
 
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
-import com.example.symply_care.entity.Appointments;
-import com.example.symply_care.entity.Doctor;
-import com.example.symply_care.entity.Inquiries;
-import com.example.symply_care.entity.Users;
+import com.example.symply_care.entity.*;
 import com.example.symply_care.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/patients")
@@ -89,9 +87,13 @@ public class PatientController {
     }
 
     @PostMapping("/patient/{patientID}/addInquiry")
-    public ResponseEntity<List<Inquiries>> addInquiryToPatient(@PathVariable Long patientID,@RequestBody @Valid Inquiries inquiry){
-        return ResponseEntity.ok(patientService.addInquiryToPatient(patientID,inquiry));
+    public ResponseEntity<List<Inquiries>> addInquiryToPatient(
+            @PathVariable Long patientID,
+            @RequestBody Map<String, Object> inquiryData) {
+        List<Inquiries> inquiries = patientService.addInquiryToPatient(patientID, inquiryData);
+        return ResponseEntity.ok(inquiries);
     }
+
     @PostMapping("/patient/{patientID}/addRole")
     public ResponseEntity<Users> addRoleToPatient(@PathVariable Long patientID, @RequestBody @jakarta.validation.Valid String role){
         return ResponseEntity.ok(patientService.addRoleToPatient(patientID,role));

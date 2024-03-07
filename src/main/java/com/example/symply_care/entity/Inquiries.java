@@ -1,5 +1,7 @@
 package com.example.symply_care.entity;
 
+import com.example.symply_care.dto.DoctorDTO;
+import com.example.symply_care.dto.PatientDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -36,7 +38,7 @@ public class Inquiries {
     private List<Prediction> predictions;
 
     @Column(nullable = false)
-    private Symptom symptoms;
+    private String symptoms;
 
     @Column()
     private Boolean hasAnswered;

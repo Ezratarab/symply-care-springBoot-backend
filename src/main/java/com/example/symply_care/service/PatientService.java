@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -260,15 +262,26 @@ public class PatientService {
     }
 
     @Transactional
-    public List<Inquiries> addInquiryToPatient(Long patientID, Inquiries inquiry) {
-        Patient patient = patientRepository.findById(patientID)
-                .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
+    public List<Inquiries> addInquiryToPatient(Long patientID, Map<String, Object> inquiryData) {
+        Map<String, Object> doctorData = (Map<String, Object>) inquiryData.get("doctor");
+        Doctor doctor = convertToDoctor(doctorData);
 
+        Map<String, Object> patientData = (Map<String, Object>) inquiryData.get("patient");
+        Patient patient = convertToPatient(patientData);
+
+        String symptoms = (String) inquiryData.get("symptoms");
+
+        patient = patientRepository.findById(patientID)
+                .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
+        Inquiries inquiry = new Inquiries();
+        inquiry.setDoctor(doctor);
+        inquiry.setPatient(patient);
+        inquiry.setSymptoms(symptoms);
         List<Inquiries> inquiries = patient.getInquiries();
         inquiry.setHasAnswered(false);
         Optional<Doctor> doctorOptional = doctorRepository.findById(inquiry.getDoctor().getId());
         if (doctorOptional.isPresent()) {
-            Doctor doctor = doctorOptional.get();
+            doctor = doctorOptional.get();
             List<Inquiries> doctorInquiries = doctor.getInquiries();
             doctorInquiries.add(inquiry);
             doctor.setInquiries(doctorInquiries);
@@ -280,6 +293,49 @@ public class PatientService {
             throw new NoSuchElementException("Doctor not found with id: " + inquiry.getDoctor().getId());
         }
     }
+    @Transactional
+    public Doctor convertToDoctor(Map<String, Object> doctorData) {
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorData.get("id") instanceof Long ? (Long) doctorData.get("id") : ((Integer) doctorData.get("id")).longValue());
+        doctor.setFirstName((String) doctorData.get("firstName"));
+        doctor.setLastName((String) doctorData.get("lastName"));
+        doctor.setEmail((String) doctorData.get("email"));
+        doctor.setCity((String) doctorData.get("city"));
+        doctor.setCountry((String) doctorData.get("country"));
+        doctor.setStreet((String) doctorData.get("street"));
+        doctor.setBirthDay((String) doctorData.get("birthDay"));
+        doctor.setImageData(parseImageData((String) doctorData.get("imageData")));
+        doctor.setPassword((String) doctorData.get("password"));
+        doctor.setSpecialization((String) doctorData.get("specialization"));
+        doctor.setPatients((List<Patient>) doctorData.get("patients"));
+        doctor.setInquiries((List<Inquiries>) doctorData.get("inquiriesList"));
+        doctor.setAppointments((List<Appointments>) doctorData.get("appointments"));
+        return doctor;
+    }
+
+    private byte[] parseImageData(String imageDataString) {
+        // Decode Base64 string to byte array
+        return Base64.getDecoder().decode(imageDataString);
+    }
+    @Transactional
+    public Patient convertToPatient(Map<String, Object> patientData) {
+        Patient patient = new Patient();
+        patient.setId(patientData.get("id") instanceof Long ? (Long) patientData.get("id") : ((Integer) patientData.get("id")).longValue());
+        patient.setFirstName((String) patientData.get("firstName"));
+        patient.setLastName((String) patientData.get("lastName"));
+        patient.setEmail((String) patientData.get("email"));
+        patient.setCity((String) patientData.get("city"));
+        patient.setCountry((String) patientData.get("country"));
+        patient.setStreet((String) patientData.get("street"));
+        patient.setBirthDay((String) patientData.get("birthDay"));
+        patient.setImageData(parseImageData((String) patientData.get("imageData")));
+        patient.setPassword((String) patientData.get("password"));
+        patient.setInquiries((List<Inquiries>)patientData.get("inquiriesList"));
+        patient.setDoctors((List<Doctor>) patientData.get("doctors"));
+        patient.setAppointments((List<Appointments>) patientData.get("appointments"));
+        return patient;
+    }
+
 
     @Transactional
     public void deletePatientFromDoctors(Long patientId) {

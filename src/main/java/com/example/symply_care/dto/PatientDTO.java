@@ -52,7 +52,7 @@ public class PatientDTO{
     @NotNull(message = "Birth Date should not be null")
     @NotBlank(message = "Birth Date should not be blank")
     @NotEmpty(message = "Birth Date should not be empty")
-    private Date birthDay;
+    private String birthDay;
 
     @Lob
     private byte[] imageData;
