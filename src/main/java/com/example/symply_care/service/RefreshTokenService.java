@@ -19,14 +19,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * RefreshTokenService class is responsible for creating, deleting and verifying refresh tokens.
- * It is also responsible for refreshing the JWT token.
- * It is called from the AuthenticationService class.
- */
-
-
-
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {

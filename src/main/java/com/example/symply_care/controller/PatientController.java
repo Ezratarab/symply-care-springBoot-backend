@@ -83,8 +83,8 @@ public class PatientController {
         return ResponseEntity.ok(patientService.addDoctorToPatient(patientID,doctor.getId()));
     }
     @PostMapping("/patient/{patientID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID, @RequestBody @Valid Appointments appointments) throws ParseException {
-        return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,appointments.doctor.getId(), appointments.getDate()));
+    public ResponseEntity<List<Appointments>> addAppointmentToPatient(@PathVariable Long patientID,@RequestBody Map<String, Object> appointmentData) throws ParseException {
+        return ResponseEntity.ok(patientService.addAppointmentToPatient(patientID,appointmentData));
     }
 
     @PostMapping("/patient/{patientID}/addInquiry")

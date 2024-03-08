@@ -241,36 +241,49 @@ public class PatientService {
     }
 
     @Transactional
-    public List<Appointments> addAppointmentToPatient(Long patientID,Long doctorID, String date) throws ParseException {
-        Patient patient = patientRepository.findById(patientID)
+    public List<Appointments> addAppointmentToPatient(Long patientID,Map<String, Object> appointmentData) throws ParseException {
+        Map<String, Object> doctorData = (Map<String, Object>) appointmentData.get("doctor");
+        Doctor doctor = convertToDoctor(doctorData);
+
+        Map<String, Object> patientData = (Map<String, Object>) appointmentData.get("patient");
+        Patient patient = convertToPatient(patientData);
+
+        String date = (String) appointmentData.get("date");
+        patient = patientRepository.findById(patientID)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
         Date now = new Date();
-        Optional<Doctor> doctor = doctorRepository.findById(doctorID);
-        if(doctor.isPresent()) {
-            for (Appointments doctorAppointments : doctor.get().getAppointments()) {
-                if (doctorAppointments.getDate().equals(date)) {
+        Date date2 = convertStringToDate(date);
+        List<Appointments> doctorAppointments = doctor.getAppointments();
+        List<Appointments> patientAppointments = doctor.getAppointments();
+        if(doctor != null) {
+            for (Appointments doctorAppointment : doctorAppointments) {
+                if (convertStringToDate(doctorAppointment.getDate()).equals(date2)) {
                     throw new NoSuchElementException("The doctor already has appointment in this date");
                 }
             }
-            Date date2 = convertStringToDate(date);
+            for (Appointments patientAppointment : patientAppointments) {
+                if (convertStringToDate(patientAppointment.getDate()).equals(date2)) {
+                    throw new NoSuchElementException("You already have appointment in this date");
+                }
+            }
             if (!date2.after(now)) {
                 Appointments appointment = new Appointments();
                 appointment.setPatient(patient);
-                appointment.setDoctor(doctor.get());
+                appointment.setDoctor(doctor);
                 appointment.setDate(date);
                 List<Appointments> appointments = patient.getAppointments();
                 appointments.add(appointment);
                 patient.setAppointments(appointments);
-                List<Appointments> appointments2 = doctor.get().getAppointments();
+                List<Appointments> appointments2 = doctor.getAppointments();
                 appointments2.add(appointment);
-                doctor.get().setAppointments(appointments2);
+                doctor.setAppointments(appointments2);
                 return appointments;
                 } else {
                     throw new NoSuchElementException("The date has already passed");
                 }
         }
         else{
-            throw new NoSuchElementException("There is no such doctor: "+ doctor.get().getFirstName() + doctor.get().getLastName());
+            throw new NoSuchElementException("There is no such doctor: "+ doctor.getFirstName() + doctor.getLastName());
         }
     }
 
