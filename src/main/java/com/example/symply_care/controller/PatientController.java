@@ -32,6 +32,10 @@ public class PatientController {
     public ResponseEntity<List<PatientDTO>> getAllPatients() {
         return ResponseEntity.ok(patientService.getAllPatients());
     }
+    @GetMapping("/allInquiries")
+    public ResponseEntity<List<Inquiries>> getAllInquiries(){
+        return ResponseEntity.ok(patientService.getAllInquiries());
+    }
 
     @PostMapping("/addPatient")
     public ResponseEntity<PatientDTO> createPatient(@RequestBody @Valid PatientDTO patientDTO) throws Exception {

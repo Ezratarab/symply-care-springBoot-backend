@@ -3,15 +3,11 @@ package com.example.symply_care.service;
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.*;
-import com.example.symply_care.repository.DoctorRepository;
-import com.example.symply_care.repository.PatientRepository;
-import com.example.symply_care.repository.RoleRepository;
-import com.example.symply_care.repository.UsersRepository;
+import com.example.symply_care.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
@@ -29,15 +25,17 @@ public class DoctorService {
     private final PatientRepository patientRepository;
     private final UsersRepository usersRepository;
     private final RoleRepository roleRepository;
+    private final InquiriesRepository inquiriesRepository;
     @Autowired
     @Lazy
     private PatientService patientService;
 
-    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository) {
+    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.usersRepository=usersRepository;
         this.roleRepository=roleRepository;
+        this.inquiriesRepository = inquiriesRepository;
     }
 
     @Transactional
@@ -164,9 +162,10 @@ public class DoctorService {
         doctorRepository.delete(doctor);
     }
 
-    private Doctor convertToDoctor(Map<String, Object> doctorData) {
+    @Transactional
+    public Doctor convertToDoctor(Map<String, Object> doctorData) {
         Doctor doctor = new Doctor();
-        doctor.setId((Long) doctorData.get("id"));
+        doctor.setId(doctorData.get("id") instanceof Long ? (Long) doctorData.get("id") : ((Integer) doctorData.get("id")).longValue());
         doctor.setFirstName((String) doctorData.get("firstName"));
         doctor.setLastName((String) doctorData.get("lastName"));
         doctor.setEmail((String) doctorData.get("email"));
@@ -174,7 +173,7 @@ public class DoctorService {
         doctor.setCountry((String) doctorData.get("country"));
         doctor.setStreet((String) doctorData.get("street"));
         doctor.setBirthDay((String) doctorData.get("birthDay"));
-        doctor.setImageData((byte[]) doctorData.get("imageData"));
+        doctor.setImageData(parseImageData((String) doctorData.get("imageData")));
         doctor.setPassword((String) doctorData.get("password"));
         doctor.setSpecialization((String) doctorData.get("specialization"));
         doctor.setPatients((List<Patient>) doctorData.get("patients"));
@@ -183,9 +182,13 @@ public class DoctorService {
         return doctor;
     }
 
-    private Patient convertToPatient(Map<String, Object> patientData) {
+    private byte[] parseImageData(String imageDataString) {
+        return Base64.getDecoder().decode(imageDataString);
+    }
+    @Transactional
+    public Patient convertToPatient(Map<String, Object> patientData) {
         Patient patient = new Patient();
-        patient.setId((Long) patientData.get("id"));
+        patient.setId(patientData.get("id") instanceof Long ? (Long) patientData.get("id") : ((Integer) patientData.get("id")).longValue());
         patient.setFirstName((String) patientData.get("firstName"));
         patient.setLastName((String) patientData.get("lastName"));
         patient.setEmail((String) patientData.get("email"));
@@ -193,7 +196,7 @@ public class DoctorService {
         patient.setCountry((String) patientData.get("country"));
         patient.setStreet((String) patientData.get("street"));
         patient.setBirthDay((String) patientData.get("birthDay"));
-        patient.setImageData((byte[]) patientData.get("imageData"));
+        patient.setImageData(parseImageData((String) patientData.get("imageData")));
         patient.setPassword((String) patientData.get("password"));
         patient.setInquiries((List<Inquiries>)patientData.get("inquiriesList"));
         patient.setDoctors((List<Doctor>) patientData.get("doctors"));
@@ -234,10 +237,12 @@ public class DoctorService {
                 .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
         Patient patient = patientRepository.findById(PatientID)
                 .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + PatientID));
-
         List<Patient> patients = doctor.getPatients();
         patients.add(patient);
         doctor.setPatients(patients);
+        List<Doctor> patientDoctors = patient.getDoctors();
+        patientDoctors.add(doctor);
+        patient.setDoctors(patientDoctors);
         return patients.stream()
                 .map(patientService::mapPatientToPatientDTO)
                 .collect(Collectors.toList());
@@ -246,27 +251,103 @@ public class DoctorService {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return sdf.parse(dateString);
     }
+
     @Transactional
-    public List<Appointments> addAppointmentToDoctor(Long doctorID,Long patientID, String date) throws ParseException {
-        Doctor doctor = doctorRepository.findById(doctorID)
+    public List<Inquiries> addInquiryToPatient(Long doctorID, Map<String, Object> inquiryData) {
+        Map<String, Object> doctorData = (Map<String, Object>) inquiryData.get("doctor");
+        Doctor doctor = convertToDoctor(doctorData);
+
+        Map<String, Object> patientData = (Map<String, Object>) inquiryData.get("patient");
+        Patient patient = convertToPatient(patientData);
+
+        String symptoms = (String) inquiryData.get("symptoms");
+
+        doctor = doctorRepository.findById(doctorID)
+                .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
+        Inquiries inquiry = new Inquiries();
+        inquiry.setDoctor(doctor);
+        inquiry.setPatient(patient);
+        inquiry.setSymptoms(symptoms);
+        List<Inquiries> inquiries = doctor.getInquiries();
+        Optional<Patient> patientOptional = patientRepository.findById(inquiry.getPatient().getId());
+        if (patientOptional.isPresent()) {
+            patient = patientOptional.get();
+            List<Inquiries> patientInquiries = patient.getInquiries();
+            patientInquiries.add(inquiry);
+            patient.setInquiries(patientInquiries);
+            inquiries.add(inquiry);
+            doctor.setInquiries(inquiries);
+            inquiriesRepository.save(inquiry);
+            return inquiries;
+        } else {
+            throw new NoSuchElementException("Patient not found with id: " + inquiry.getDoctor().getId());
+        }
+    }
+    @Transactional
+    public List<Inquiries> addInquiryToDoctor(Long doctorID, Map<String, Object> inquiryData) {
+        Map<String, Object> doctorData = (Map<String, Object>) inquiryData.get("doctor");
+        Doctor doctor = convertToDoctor(doctorData);
+
+        Map<String, Object> doctor2Data = (Map<String, Object>) inquiryData.get("doctor2");
+        Doctor doctor2 = convertToDoctor(doctor2Data);
+
+        String symptoms = (String) inquiryData.get("symptoms");
+
+        doctor = doctorRepository.findById(doctorID)
+                .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
+        Inquiries inquiry = new Inquiries();
+        inquiry.setDoctor(doctor);
+        inquiry.setDoctor2(doctor2);
+        inquiry.setSymptoms(symptoms);
+        List<Inquiries> inquiries = doctor.getInquiries();
+        Optional<Doctor> doctor2Optional = doctorRepository.findById(inquiry.getDoctor2().getId());
+        if (doctor2Optional.isPresent()) {
+            doctor2 = doctor2Optional.get();
+            List<Inquiries> doctor2Inquiries = doctor2.getInquiries();
+            doctor2Inquiries.add(inquiry);
+            doctor2.setInquiries(doctor2Inquiries);
+            inquiries.add(inquiry);
+            doctor.setInquiries(inquiries);
+            inquiriesRepository.save(inquiry);
+            return inquiries;
+        } else {
+            throw new NoSuchElementException("Doctor2 not found with id: " + inquiry.getDoctor().getId());
+        }
+    }
+    @Transactional
+    public List<Appointments> addAppointmentToDoctor(Long doctorID,Map<String, Object> appointmentData) throws ParseException {
+        Map<String, Object> doctorData = (Map<String, Object>) appointmentData.get("doctor");
+        Doctor doctor = convertToDoctor(doctorData);
+
+        Map<String, Object> patientData = (Map<String, Object>) appointmentData.get("patient");
+        Patient patient = convertToPatient(patientData);
+
+        String date = (String) appointmentData.get("date");
+        doctor = doctorRepository.findById(doctorID)
                 .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
         Date now = new Date();
-        Optional<Patient> patient = patientRepository.findById(patientID);
-        if(patient.isPresent()) {
-            for (Appointments patientAppointments : patient.get().getAppointments()) {
-                if (patientAppointments.getDate().equals(date)) {
-                    throw new NoSuchElementException("The Patient already has appointment in this date");
+        Date date2 = convertStringToDate(date);
+        List<Appointments> doctorAppointments = doctor.getAppointments();
+        List<Appointments> patientAppointments = patient.getAppointments();
+        if(patient != null) {
+            for (Appointments patientAppointment : patientAppointments) {
+                if (convertStringToDate(patientAppointment.getDate()).equals(date2)) {
+                    throw new NoSuchElementException("The patient already has appointment in this date");
                 }
             }
-            Date date2 = convertStringToDate(date);
+            for (Appointments doctorApppintment : doctorAppointments) {
+                if (convertStringToDate(doctorApppintment.getDate()).equals(date2)) {
+                    throw new NoSuchElementException("You already have appointment in this date");
+                }
+            }
             if (!date2.after(now)) {
                 Appointments appointment = new Appointments();
-                appointment.setPatient(patient.get());
+                appointment.setPatient(patient);
                 appointment.setDoctor(doctor);
                 appointment.setDate(date);
-                List<Appointments> appointments = patient.get().getAppointments();
+                List<Appointments> appointments = patient.getAppointments();
                 appointments.add(appointment);
-                patient.get().setAppointments(appointments);
+                patient.setAppointments(appointments);
                 List<Appointments> appointments2 = doctor.getAppointments();
                 appointments2.add(appointment);
                 doctor.setAppointments(appointments2);
@@ -276,9 +357,8 @@ public class DoctorService {
             }
         }
         else{
-            throw new NoSuchElementException("There is no such patient: "+ patient.get().getFirstName() + patient.get().getLastName());
+            throw new NoSuchElementException("There is no such doctor: "+ doctor.getFirstName() + doctor.getLastName());
         }
-
     }
 
     @Transactional

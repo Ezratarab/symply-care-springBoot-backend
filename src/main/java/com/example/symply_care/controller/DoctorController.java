@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/doctors")
@@ -70,7 +71,20 @@ public class DoctorController {
     public ResponseEntity<List<PatientDTO>> getPatientsOfDoctor(@PathVariable Long id){
         return ResponseEntity.ok(doctorService.getPatientsOfDoctor(id));
     }
-
+    @PostMapping("/doctor/{doctorID}/addInquiryToPatient")
+    public ResponseEntity<List<Inquiries>> addInquiryToPatient(
+            @PathVariable Long doctorID,
+            @RequestBody Map<String, Object> inquiryData) {
+        List<Inquiries> inquiries = doctorService.addInquiryToPatient(doctorID, inquiryData);
+        return ResponseEntity.ok(inquiries);
+    }
+    @PostMapping("/doctor/{doctorID}/addInquiryToDoctor")
+    public ResponseEntity<List<Inquiries>> addInquiryToDoctor(
+            @PathVariable Long doctorID,
+            @RequestBody Map<String, Object> inquiryData) {
+        List<Inquiries> inquiries = doctorService.addInquiryToDoctor(doctorID, inquiryData);
+        return ResponseEntity.ok(inquiries);
+    }
 
     @GetMapping("/doctor/{id}/inquiries")
     public ResponseEntity<List<Inquiries>> getInquiriesOfDoctor(@PathVariable Long id){
@@ -87,8 +101,8 @@ public class DoctorController {
     }
 
     @PostMapping("/doctor/{doctorID}/addAppointment")
-    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@Valid @RequestBody Appointments appointment ) throws ParseException {
-        return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointment.patient.getId(),appointment.getDate()));
+    public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@RequestBody Map<String, Object> appointmentData ) throws ParseException {
+        return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointmentData));
     }
     @PostMapping("/doctor/{doctorID}/addRole")
     public ResponseEntity<Users> addRoleToDoctor(@PathVariable Long doctorID, @RequestBody @Valid String role){

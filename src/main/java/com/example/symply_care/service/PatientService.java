@@ -161,6 +161,11 @@ public class PatientService {
         return patient;
     }
     @Transactional
+    public List<Inquiries> getAllInquiries(){
+        return inquiriesRepository.findAll();
+    }
+
+    @Transactional
     public void deletePatient(Long id) throws Exception {
         Optional<Patient> optionalPatient = patientRepository.findById(id);
         if (!optionalPatient.isPresent()) {
@@ -254,7 +259,7 @@ public class PatientService {
         Date now = new Date();
         Date date2 = convertStringToDate(date);
         List<Appointments> doctorAppointments = doctor.getAppointments();
-        List<Appointments> patientAppointments = doctor.getAppointments();
+        List<Appointments> patientAppointments = patient.getAppointments();
         if(doctor != null) {
             for (Appointments doctorAppointment : doctorAppointments) {
                 if (convertStringToDate(doctorAppointment.getDate()).equals(date2)) {
@@ -304,7 +309,6 @@ public class PatientService {
         inquiry.setPatient(patient);
         inquiry.setSymptoms(symptoms);
         List<Inquiries> inquiries = patient.getInquiries();
-        inquiry.setHasAnswered(false);
         Optional<Doctor> doctorOptional = doctorRepository.findById(inquiry.getDoctor().getId());
         if (doctorOptional.isPresent()) {
             doctor = doctorOptional.get();
