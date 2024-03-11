@@ -9,10 +9,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Data
+
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
+@Setter
+@Getter
+@ToString
 public class User {
 
     @Id
@@ -44,5 +47,21 @@ public class User {
 
     @DateTimeFormat(pattern="dd/MM/yyyy")
     private String birthDay;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", city='" + city + '\'' +
+                ", country='" + country + '\'' +
+                ", street='" + street + '\'' +
+                ", birthDay='" + birthDay + '\'' +
+                '}';
+    }
+
 
 }

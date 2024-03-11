@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -109,6 +110,7 @@ public class PatientService {
         user.setPassword(patient.getPassword());
         List<Role> userRoles = user.getRoles();
         userRoles.add(roleRepository.findByRole("PATIENT"));
+        System.out.println(userRoles);
         user.setRoles(userRoles);
         usersRepository.save(user);
         return patientDTO;
