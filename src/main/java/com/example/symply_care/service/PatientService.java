@@ -248,124 +248,87 @@ public class PatientService {
     }
 
     @Transactional
-    public List<Appointments> addAppointmentToPatient(Long patientID,Map<String, Object> appointmentData) throws ParseException {
+    public List<Appointments> addAppointmentToPatient(Long patientID, Map<String, Object> appointmentData) throws ParseException {
         Map<String, Object> doctorData = (Map<String, Object>) appointmentData.get("doctor");
-        Doctor doctor = convertToDoctor(doctorData);
-
-        Map<String, Object> patientData = (Map<String, Object>) appointmentData.get("patient");
-        Patient patient = convertToPatient(patientData);
+        Long doctorID = ((Number) doctorData.get("id")).longValue();
 
         String date = (String) appointmentData.get("date");
-        patient = patientRepository.findById(patientID)
-                .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
-        Date now = new Date();
-        Date date2 = convertStringToDate(date);
-        List<Appointments> doctorAppointments = doctor.getAppointments();
-        List<Appointments> patientAppointments = patient.getAppointments();
-        if(doctor != null) {
-            for (Appointments doctorAppointment : doctorAppointments) {
-                if (convertStringToDate(doctorAppointment.getDate()).equals(date2)) {
-                    throw new NoSuchElementException("The doctor already has appointment in this date");
+
+        Optional<Patient> optionalPatient = patientRepository.findById(patientID);
+        if (optionalPatient.isPresent()) {
+            Patient patient = optionalPatient.get();
+            Optional<Doctor> optionalDoctor = doctorRepository.findById(doctorID);
+            if (optionalDoctor.isPresent()) {
+                Doctor doctor = optionalDoctor.get();
+                Date now = new Date();
+                Date date2 = convertStringToDate(date);
+                List<Appointments> doctorAppointments = doctor.getAppointments();
+                List<Appointments> patientAppointments = patient.getAppointments();
+                for (Appointments patientAppointment : patientAppointments) {
+                    if (convertStringToDate(patientAppointment.getDate()).equals(date2)) {
+                        throw new NoSuchElementException("The patient already has an appointment on this date");
+                    }
                 }
-            }
-            for (Appointments patientAppointment : patientAppointments) {
-                if (convertStringToDate(patientAppointment.getDate()).equals(date2)) {
-                    throw new NoSuchElementException("You already have appointment in this date");
+                for (Appointments doctorAppointment : doctorAppointments) {
+                    if (convertStringToDate(doctorAppointment.getDate()).equals(date2)) {
+                        throw new NoSuchElementException("You already have an appointment on this date");
+                    }
                 }
-            }
-            if (!date2.after(now)) {
-                Appointments appointment = new Appointments();
-                appointment.setPatient(patient);
-                appointment.setDoctor(doctor);
-                appointment.setDate(date);
-                List<Appointments> appointments = patient.getAppointments();
-                appointments.add(appointment);
-                patient.setAppointments(appointments);
-                List<Appointments> appointments2 = doctor.getAppointments();
-                appointments2.add(appointment);
-                doctor.setAppointments(appointments2);
-                return appointments;
+                if (date2.after(now)) {
+                    Appointments appointment = new Appointments();
+                    appointment.setPatient(patient);
+                    appointment.setDoctor(doctor);
+                    appointment.setDate(date);
+                    List<Appointments> appointments = patient.getAppointments();
+                    appointments.add(appointment);
+                    patient.setAppointments(appointments);
+                    List<Appointments> appointments2 = doctor.getAppointments();
+                    appointments2.add(appointment);
+                    doctor.setAppointments(appointments2);
+                    appointmentsRepository.save(appointment);
+                    return appointments;
                 } else {
                     throw new NoSuchElementException("The date has already passed");
                 }
-        }
-        else{
-            throw new NoSuchElementException("There is no such doctor: "+ doctor.getFirstName() + doctor.getLastName());
+            } else {
+                throw new NoSuchElementException("Doctor not found with id: " + optionalDoctor.get().getId());
+            }
+        } else {
+            throw new NoSuchElementException("Patient not found with id: " + patientID);
         }
     }
 
     @Transactional
     public List<Inquiries> addInquiryToPatient(Long patientID, Map<String, Object> inquiryData) {
         Map<String, Object> doctorData = (Map<String, Object>) inquiryData.get("doctor");
-        Doctor doctor = convertToDoctor(doctorData);
-
-        Map<String, Object> patientData = (Map<String, Object>) inquiryData.get("patient");
-        Patient patient = convertToPatient(patientData);
+        Long doctorID = ((Number) doctorData.get("id")).longValue();
 
         String symptoms = (String) inquiryData.get("symptoms");
 
-        patient = patientRepository.findById(patientID)
-                .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + patientID));
-        Inquiries inquiry = new Inquiries();
-        inquiry.setDoctor(doctor);
-        inquiry.setPatient(patient);
-        inquiry.setSymptoms(symptoms);
-        List<Inquiries> inquiries = patient.getInquiries();
-        Optional<Doctor> doctorOptional = doctorRepository.findById(inquiry.getDoctor().getId());
-        if (doctorOptional.isPresent()) {
-            doctor = doctorOptional.get();
-            List<Inquiries> doctorInquiries = doctor.getInquiries();
-            doctorInquiries.add(inquiry);
-            doctor.setInquiries(doctorInquiries);
-            inquiries.add(inquiry);
-            patient.setInquiries(inquiries);
-            inquiriesRepository.save(inquiry);
-            return inquiries;
+        Optional<Patient> optionalPatient = patientRepository.findById(patientID);
+        if (optionalPatient.isPresent()) {
+            Patient patient = optionalPatient.get();
+            Optional<Doctor> optionalDoctor = doctorRepository.findById(doctorID);
+            if (optionalDoctor.isPresent()) {
+                Doctor doctor = optionalDoctor.get();
+                Inquiries inquiry = new Inquiries();
+                inquiry.setDoctor(doctor);
+                inquiry.setPatient(patient);
+                inquiry.setSymptoms(symptoms);
+                List<Inquiries> inquiries = doctor.getInquiries();
+                List<Inquiries> patientInquiries = patient.getInquiries();
+                patientInquiries.add(inquiry);
+                patient.setInquiries(patientInquiries);
+                inquiries.add(inquiry);
+                doctor.setInquiries(inquiries);
+                inquiriesRepository.save(inquiry);
+                return inquiries;
+            } else {
+                throw new NoSuchElementException("Doctor not found with id: " + optionalDoctor.get().getId());
+            }
         } else {
-            throw new NoSuchElementException("Doctor not found with id: " + inquiry.getDoctor().getId());
+            throw new NoSuchElementException("Patient not found with id: " + patientID);
         }
-    }
-    @Transactional
-    public Doctor convertToDoctor(Map<String, Object> doctorData) {
-        Doctor doctor = new Doctor();
-        doctor.setId(doctorData.get("id") instanceof Long ? (Long) doctorData.get("id") : ((Integer) doctorData.get("id")).longValue());
-        doctor.setFirstName((String) doctorData.get("firstName"));
-        doctor.setLastName((String) doctorData.get("lastName"));
-        doctor.setEmail((String) doctorData.get("email"));
-        doctor.setCity((String) doctorData.get("city"));
-        doctor.setCountry((String) doctorData.get("country"));
-        doctor.setStreet((String) doctorData.get("street"));
-        doctor.setBirthDay((String) doctorData.get("birthDay"));
-        doctor.setImageData(parseImageData((String) doctorData.get("imageData")));
-        doctor.setPassword((String) doctorData.get("password"));
-        doctor.setSpecialization((String) doctorData.get("specialization"));
-        doctor.setPatients((List<Patient>) doctorData.get("patients"));
-        doctor.setInquiries((List<Inquiries>) doctorData.get("inquiriesList"));
-        doctor.setAppointments((List<Appointments>) doctorData.get("appointments"));
-        return doctor;
-    }
-
-    private byte[] parseImageData(String imageDataString) {
-        // Decode Base64 string to byte array
-        return Base64.getDecoder().decode(imageDataString);
-    }
-    @Transactional
-    public Patient convertToPatient(Map<String, Object> patientData) {
-        Patient patient = new Patient();
-        patient.setId(patientData.get("id") instanceof Long ? (Long) patientData.get("id") : ((Integer) patientData.get("id")).longValue());
-        patient.setFirstName((String) patientData.get("firstName"));
-        patient.setLastName((String) patientData.get("lastName"));
-        patient.setEmail((String) patientData.get("email"));
-        patient.setCity((String) patientData.get("city"));
-        patient.setCountry((String) patientData.get("country"));
-        patient.setStreet((String) patientData.get("street"));
-        patient.setBirthDay((String) patientData.get("birthDay"));
-        patient.setImageData(parseImageData((String) patientData.get("imageData")));
-        patient.setPassword((String) patientData.get("password"));
-        patient.setInquiries((List<Inquiries>)patientData.get("inquiriesList"));
-        patient.setDoctors((List<Doctor>) patientData.get("doctors"));
-        patient.setAppointments((List<Appointments>) patientData.get("appointments"));
-        return patient;
     }
 
 

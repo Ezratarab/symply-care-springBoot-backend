@@ -29,7 +29,7 @@ public class Doctor extends User{
     private String hospital;
 
     @Column
-    private String HMO;
+    private String hmo;
 
     @Column(nullable = false)
     private Integer experience;

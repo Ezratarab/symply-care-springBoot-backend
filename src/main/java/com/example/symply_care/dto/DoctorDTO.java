@@ -69,7 +69,7 @@ public class DoctorDTO {
     @NotNull(message = "HMO should not be null")
     @NotBlank(message = "HMO should not be blank")
     @NotEmpty(message = "HMO should not be empty")
-    private String HMO;
+    private String hmo;
 
     @NotNull(message = "experience should not be null")
     @NotBlank(message = "experience should not be blank")
