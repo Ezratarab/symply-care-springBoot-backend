@@ -12,11 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * Custom logout handler, which adds the token to the blacklist, after the user logs out
- *
- */
-
 
 @Component
 @RequiredArgsConstructor
@@ -31,13 +26,11 @@ public class CustomLogoutHandler implements LogoutSuccessHandler {
                                 Authentication authentication) throws
             IOException, ServletException {
 
-        // Extract the JWT token
         String token = request.getHeader(JwtProperties.HEADER_STRING).
                 substring(JwtProperties.HEADER_STRING.length());
         System.out.println("--------------------------------------");
         tokenBlacklistService.addToBlacklist(token);
 
-        // write user logout
         if (authentication != null)
             System.out.println("User logged out: " + authentication.getName());
 

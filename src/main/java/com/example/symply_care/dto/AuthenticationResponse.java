@@ -17,11 +17,9 @@ public class AuthenticationResponse {
     private String refreshToken;
 
     public AuthenticationResponse(String accessToken, String refreshToken,
-                                  // pay attention: the roles are a collection of GrantedAuthority objects
                                   Collection<? extends GrantedAuthority> roles) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
-        // convert the roles to a list of strings, for the response body, because the response body is JSON
         this.roles = roles.stream().map(GrantedAuthority::getAuthority).toList();
     }
 }

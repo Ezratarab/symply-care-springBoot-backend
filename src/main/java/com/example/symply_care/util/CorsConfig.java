@@ -11,19 +11,19 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/doctors/**")  // this maps all the CRUD operations for /employees endpoint
+        registry.addMapping("/doctors/**")
                 .allowedOrigins(ALLOWED_ORIGIN)
-                .allowedMethods("GET", "POST", "PUT", "DELETE")  // specify the HTTP methods you want to allow
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowCredentials(true)
                 .maxAge(3600);
-        registry.addMapping("/patients/**")  // this maps all the CRUD operations for /employees endpoint
+        registry.addMapping("/patients/**")
                 .allowedOrigins(ALLOWED_ORIGIN)
-                .allowedMethods("GET", "POST", "PUT", "DELETE")  // specify the HTTP methods you want to allow
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowCredentials(true)
                 .maxAge(3600);
         registry.addMapping("/**")
                 .allowedOrigins(ALLOWED_ORIGIN)
-                .allowedMethods("GET", "POST", "PUT", "DELETE")  // specify the HTTP methods you want to allow
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowCredentials(true)
                 .maxAge(3600);
     }

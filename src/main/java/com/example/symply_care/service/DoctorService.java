@@ -287,15 +287,12 @@ public class DoctorService {
 
         String date = (String) appointmentData.get("date");
 
-        // Check if the doctor exists
         Optional<Doctor> optionalDoctor = doctorRepository.findById(doctorID);
         if (optionalDoctor.isPresent()) {
             Doctor doctor = optionalDoctor.get();
-            // Check if the patient exists
             Optional<Patient> optionalPatient = patientRepository.findById(patientID);
             if (optionalPatient.isPresent()) {
                 Patient patient = optionalPatient.get();
-                // Proceed with appointment creation
                 Date now = new Date();
                 Date date2 = convertStringToDate(date);
                 List<Appointments> doctorAppointments = doctor.getAppointments();
@@ -311,7 +308,6 @@ public class DoctorService {
                     }
                 }
                 if (date2.after(now)) {
-                    // Create and add the appointment
                     Appointments appointment = new Appointments();
                     appointment.setPatient(patient);
                     appointment.setDoctor(doctor);

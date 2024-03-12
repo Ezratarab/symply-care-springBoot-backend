@@ -16,8 +16,6 @@ public class TokenBlackListService {
     }
 
     private void removeExpiredTokens() {
-        // remove expired tokes from the blacklist,
-        // if the Date.now() is after the expiration date
         for (String token : blacklist.keySet()) {
             if (Instant.now().isAfter(blacklist.get(token))) {
                 blacklist.remove(token);

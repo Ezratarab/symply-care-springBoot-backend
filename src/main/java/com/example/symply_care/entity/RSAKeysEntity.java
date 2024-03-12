@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 public class RSAKeysEntity {
 
     @Id
-    private Integer kid; // Key ID
+    private Integer kid;
 
-    @Lob // Large Object - for storing large data
+    @Lob
     @Column(name = "`private_key`", nullable = false, columnDefinition = "MEDIUMBLOB")
-    private byte[] private_key; // The private key, stored in binary format
+    private byte[] private_key;
 
     @Lob // Large Object - for storing large data
     @Column(name = "`public_key`", nullable = false, columnDefinition = "MEDIUMBLOB")
-    private byte[] public_key; // The private key, stored in binary format
+    private byte[] public_key;
 
     public RSAKeysEntity(Integer kid, byte[] privateKey, byte[] publicKey) {
         this.kid = kid;
