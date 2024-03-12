@@ -80,9 +80,14 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getInquiriesOfPatient(id));
     }
 
+
     @GetMapping("/patient/{id}/appointments")
     public ResponseEntity<List<Appointments>> getAppointmentsOfPatient(@PathVariable Long id){
         return ResponseEntity.ok(patientService.getAppointmentsOfPatient(id));
+    }
+    @GetMapping("/patient/appointments")
+    public ResponseEntity<List<Appointments>> getAppointments(){
+        return ResponseEntity.ok(patientService.getAppointments());
     }
 
     @PostMapping("/patient/{patientID}/addDoctor")

@@ -219,6 +219,8 @@ public class PatientService {
         System.out.println(userAppointments);
         return userAppointments;
     }
+    public List<Appointments> getAppointments() {
+        return appointmentsRepository.findAll();    }
     @Transactional
 
     public Appointments createAppointment(Long id, Appointments appointment) {
