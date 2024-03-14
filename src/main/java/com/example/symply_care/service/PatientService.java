@@ -180,6 +180,23 @@ public class PatientService {
         patientRepository.delete(patient);
     }
     @Transactional
+    public String deleteAppointment(Long id) throws Exception {
+        Optional<Appointments> optionalAppointment = appointmentsRepository.findById(id);
+        if (!optionalAppointment.isPresent()) {
+            throw new Exception("Appointment not found with ID: " + id);
+        }
+        Patient patient = optionalAppointment.get().getPatient();
+        List<Appointments> patientAppointments = patient.getAppointments();
+        patientAppointments.remove(optionalAppointment.get());
+        patient.setAppointments(patientAppointments);
+        Doctor doctor = optionalAppointment.get().getDoctor();
+        List<Appointments> doctorAppointments = doctor.getAppointments();
+        doctorAppointments.remove(optionalAppointment.get());
+        doctor.setAppointments(doctorAppointments);
+        appointmentsRepository.delete(optionalAppointment.get());
+        return "Appointment deleted successfully";
+    }
+    @Transactional
 
     public List<DoctorDTO> getDoctorsOfPatient(Long id) {
         Patient patient = patientRepository.findById(id)
@@ -314,18 +331,26 @@ public class PatientService {
             if (optionalDoctor.isPresent()) {
                 Doctor doctor = optionalDoctor.get();
                 Inquiries inquiry = new Inquiries();
-                inquiry.setDoctor(doctor);
+
+                List<Doctor> doctors = new ArrayList<>();
+                doctors.add(doctor);
+                inquiry.setDoctor(doctors);
+
                 inquiry.setPatient(patient);
+
                 inquiry.setSymptoms(symptoms);
-                List<Inquiries> inquiries = doctor.getInquiries();
+
+                Inquiries savedInquiry = inquiriesRepository.save(inquiry);
+                List<Inquiries> doctorsInquiries = doctor.getInquiries();
+                doctorsInquiries.add(inquiry);
+                doctor.setInquiries(doctorsInquiries);
+                doctorRepository.save(doctor);
                 List<Inquiries> patientInquiries = patient.getInquiries();
-                patientInquiries.add(inquiry);
+                patientInquiries.add(savedInquiry);
                 patient.setInquiries(patientInquiries);
-                inquiries.add(inquiry);
-                doctor.setInquiries(inquiries);
-                inquiriesRepository.save(inquiry);
-                return inquiries;
-            } else {
+                patientRepository.save(patient);
+                return patientInquiries;
+            }else{
                 throw new NoSuchElementException("Doctor not found with id: " + optionalDoctor.get().getId());
             }
         } else {

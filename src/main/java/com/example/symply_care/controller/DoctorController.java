@@ -104,12 +104,16 @@ public class DoctorController {
     public ResponseEntity<List<Appointments>> addAppointmentToDoctor(@PathVariable Long doctorID,@RequestBody Map<String, Object> appointmentData ) throws ParseException {
         return ResponseEntity.ok(doctorService.addAppointmentToDoctor(doctorID,appointmentData));
     }
+    @DeleteMapping("/deleteAppointment/{id}")
+    public ResponseEntity<String> deleteAppointment(@PathVariable Long id) throws Exception {
+        return ResponseEntity.ok(doctorService.deleteAppointment(id));
+    }
     @PostMapping("/doctor/{doctorID}/addRole")
     public ResponseEntity<Users> addRoleToDoctor(@PathVariable Long doctorID, @RequestBody @Valid String role){
         return ResponseEntity.ok(doctorService.addRoleToDoctor(doctorID,role));
     }
 
-    @PostMapping("/doctor/{doctorID}/addImage")
+    @PutMapping ("/doctor/{doctorID}/addImage")
     public String uploadImage(@PathVariable Long doctorID, @RequestParam("image") MultipartFile file) {
         System.out.println("---------------------------------------");
         System.out.println(file);

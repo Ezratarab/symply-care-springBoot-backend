@@ -89,6 +89,10 @@ public class PatientController {
     public ResponseEntity<List<Appointments>> getAppointments(){
         return ResponseEntity.ok(patientService.getAppointments());
     }
+    @DeleteMapping("/deleteAppointment/{id}")
+    public ResponseEntity<String> deleteAppointment(@PathVariable Long id) throws Exception {
+        return ResponseEntity.ok(patientService.deleteAppointment(id));
+    }
 
     @PostMapping("/patient/{patientID}/addDoctor")
     public ResponseEntity<List<DoctorDTO>> addDoctorToPatient(@PathVariable Long patientID,@RequestBody @Valid DoctorDTO doctor){
@@ -111,7 +115,7 @@ public class PatientController {
     public ResponseEntity<Users> addRoleToPatient(@PathVariable Long patientID, @RequestBody @jakarta.validation.Valid String role){
         return ResponseEntity.ok(patientService.addRoleToPatient(patientID,role));
     }
-    @PostMapping("/patient/{patientID}/addImage")
+    @PutMapping("/patient/{patientID}/addImage")
     public String uploadImage(@PathVariable Long patientID, @RequestParam("image") MultipartFile file) {
         System.out.println(file);
         try {

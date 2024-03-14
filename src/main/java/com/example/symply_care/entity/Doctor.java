@@ -36,7 +36,7 @@ public class Doctor extends User{
 
     @Column
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     private List<Inquiries> inquiries;
 
     @ManyToMany

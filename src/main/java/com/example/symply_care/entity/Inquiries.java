@@ -23,17 +23,25 @@ public class Inquiries {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @ManyToMany
     @JsonIgnore
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "doctor_id", nullable = false)
-    private Doctor doctor;
+    @JoinTable(
+            name = "inquiries_doctor",
+            joinColumns = @JoinColumn(name = "inquiries_id"),
+            inverseJoinColumns = @JoinColumn(name = "doctor_id")
+    )
+    private List<Doctor> doctor;
 
-    @ManyToOne
+    @ManyToMany
     @JsonIgnore
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "doctor2_id")
-    private Doctor doctor2;
+    @JoinTable(
+            name = "inquiries_doctor2",
+            joinColumns = @JoinColumn(name = "inquiries_id"),
+            inverseJoinColumns = @JoinColumn(name = "doctor2_id")
+    )
+    private List<Doctor> doctor2;
 
     @ManyToOne
     @JsonIgnore
