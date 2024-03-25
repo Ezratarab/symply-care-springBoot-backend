@@ -7,6 +7,7 @@ import com.example.symply_care.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -261,7 +262,6 @@ public class DoctorService {
                 doctorsInquiries.add(inquiry);
                 doctor.setInquiries(doctorsInquiries);
                 doctorRepository.save(doctor);
-                // Add the inquiry to the patient's list of inquiries
                 List<Inquiries> patientInquiries = patient.getInquiries();
                 patientInquiries.add(savedInquiry);
                 patient.setInquiries(patientInquiries);
@@ -423,6 +423,16 @@ public class DoctorService {
         } catch (IOException ex) {
             throw new Exception("Could not store file " + file, ex);
         }
+    }
+    public void answerInquiry(Long inquiryId,String answer) throws Exception {
+        Optional<Inquiries> optionalInquiry = inquiriesRepository.findById(inquiryId);
+        if (!optionalInquiry.isPresent()) {
+            throw new Exception("Inquiry not found with ID: " + inquiryId);
+        }
+        Inquiries inquiry = optionalInquiry.get();
+        inquiry.setAnswer(answer);
+        inquiry.setHasAnswered(true);
+        inquiriesRepository.save(inquiry);
     }
 
 

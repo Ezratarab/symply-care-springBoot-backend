@@ -112,6 +112,15 @@ public class DoctorController {
     public ResponseEntity<Users> addRoleToDoctor(@PathVariable Long doctorID, @RequestBody @Valid String role){
         return ResponseEntity.ok(doctorService.addRoleToDoctor(doctorID,role));
     }
+    @PutMapping ("/answerInquiry/{inquiryId}")
+    public ResponseEntity<Void> answerInquiry(@PathVariable Long inquiryId, @RequestBody @Valid String answer) throws Exception {
+        try{
+            doctorService.answerInquiry(inquiryId,answer);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok().build();
+    }
 
     @PutMapping ("/doctor/{doctorID}/addImage")
     public String uploadImage(@PathVariable Long doctorID, @RequestParam("image") MultipartFile file) {

@@ -57,6 +57,9 @@ public class Inquiries {
     @Column(nullable = false)
     private String symptoms;
 
+    @Column
+    private String answer = "";
+
     @Column()
     private Boolean hasAnswered = false;
 }
