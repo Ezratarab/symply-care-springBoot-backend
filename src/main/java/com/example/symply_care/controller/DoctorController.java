@@ -113,13 +113,13 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.addRoleToDoctor(doctorID,role));
     }
     @PutMapping ("/answerInquiry/{inquiryId}")
-    public ResponseEntity<Void> answerInquiry(@PathVariable Long inquiryId, @RequestBody @Valid String answer) throws Exception {
+    public ResponseEntity<String> answerInquiry(@PathVariable Long inquiryId, @RequestBody @Valid String answer) throws Exception {
         try{
             doctorService.answerInquiry(inquiryId,answer);
         }catch (Exception e){
             e.printStackTrace();
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("Inquiry answered successfully");
     }
 
     @PutMapping ("/doctor/{doctorID}/addImage")
@@ -133,6 +133,16 @@ public class DoctorController {
         }
         return "redirect:/doctor/{doctorID}";
     }
+    @PutMapping("/answerAI/{inquiryId}")
+    public ResponseEntity<String> answerAI(@PathVariable Long inquiryId) throws Exception {
+        try{
+            return doctorService.sendTextToFlaskServer(inquiryId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok().body("error answering AI");
+    }
+
 
 
 }

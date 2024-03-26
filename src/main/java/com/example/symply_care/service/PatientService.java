@@ -339,7 +339,7 @@ public class PatientService {
                 inquiry.setPatient(patient);
 
                 inquiry.setSymptoms(symptoms);
-
+                inquiry.setSenderId(patientID);
                 Inquiries savedInquiry = inquiriesRepository.save(inquiry);
                 List<Inquiries> doctorsInquiries = doctor.getInquiries();
                 doctorsInquiries.add(inquiry);

@@ -60,6 +60,9 @@ public class Inquiries {
     @Column
     private String answer = "";
 
+    @Column(nullable = false)
+    private Long senderId;
+
     @Column()
     private Boolean hasAnswered = false;
 }

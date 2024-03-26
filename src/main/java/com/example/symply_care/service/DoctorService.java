@@ -8,8 +8,16 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -31,15 +39,44 @@ public class DoctorService {
     @Autowired
     @Lazy
     private PatientService patientService;
+    public static final String FLASK_SERVER_URL = "http://localhost:8500";
+    private final RestTemplate restTemplate;
 
-    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository) {
+
+    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository, WebClient.Builder webClientBuilder) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.usersRepository=usersRepository;
         this.roleRepository=roleRepository;
         this.inquiriesRepository = inquiriesRepository;
         this.appointmentsRepository = appointmentsRepository;
+        this.restTemplate = new RestTemplate();
+
     }
+
+
+    public ResponseEntity<String> sendTextToFlaskServer(Long inquiryId) throws Exception {
+        System.out.println("Sending text to Flask server");
+        Optional<Inquiries> optionalInquiry = inquiriesRepository.findById((inquiryId));
+        if (!optionalInquiry.isPresent()) {
+            throw new Exception("Inquiry not found with ID: " + inquiryId);
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("symptoms", optionalInquiry.get().getSymptoms());
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(FLASK_SERVER_URL + "/predict", requestEntity, String.class);
+
+        // Print Flask server response (for debugging purposes)
+        System.out.println(response.getBody());
+
+        return response;
+    }
+
 
     @Transactional
 
@@ -252,8 +289,7 @@ public class DoctorService {
                 inquiry.setDoctor(doctors);
 
                 inquiry.setPatient(patient);
-
-                // Set the symptoms
+                inquiry.setSenderId(doctorID);
                 inquiry.setSymptoms(symptoms);
 
                 // Save the inquiry
@@ -298,6 +334,7 @@ public class DoctorService {
                 doctors2.add(doctor2);
                 inquiry.setDoctor2(doctors2);
                 inquiry.setSymptoms(symptoms);
+                inquiry.setSenderId(doctorID);
                 inquiriesRepository.save(inquiry);
                 List<Inquiries> doctorsInquiries = doctor.getInquiries();
                 doctorsInquiries.add(inquiry);
