@@ -6,17 +6,16 @@ import com.example.symply_care.entity.Appointments;
 import com.example.symply_care.entity.Inquiries;
 import com.example.symply_care.entity.Users;
 import com.example.symply_care.service.DoctorService;
+import com.example.symply_care.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +28,8 @@ public class DoctorController {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private DoctorService doctorService;
+    @Autowired
+    private EmailService emailService;
 
 
     @GetMapping("/doctors")
@@ -143,6 +144,13 @@ public class DoctorController {
         return ResponseEntity.ok().body("error answering AI");
     }
 
-
+    @PostMapping("/send-email")
+    public String sendEmail(
+                            @RequestParam String to,
+                            @RequestParam String subject,
+                            @RequestParam String body) {
+        // Call the sendEmail method of EmailService
+        return emailService.sendEmail(to, subject, body);
+    }
 
 }
