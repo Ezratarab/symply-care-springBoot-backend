@@ -26,7 +26,6 @@ import java.util.Map;
 
 public class PatientController {
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private PatientService patientService;
 

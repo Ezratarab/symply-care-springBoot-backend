@@ -1,13 +1,16 @@
 package com.example.symply_care.service;
 
+import com.example.symply_care.controller.RabbitMQController;
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.*;
 import com.example.symply_care.repository.*;
 import jakarta.transaction.Transactional;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,7 +20,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -35,46 +37,22 @@ public class DoctorService {
     private final UsersRepository usersRepository;
     private final RoleRepository roleRepository;
     private final InquiriesRepository inquiriesRepository;
+    private final RabbitMQController rabbitMQController;
     private final AppointmentsRepository appointmentsRepository;
     @Autowired
     @Lazy
     private PatientService patientService;
     public static final String FLASK_SERVER_URL = "http://localhost:8500";
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-
-    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository, WebClient.Builder webClientBuilder) {
+    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, RabbitMQController rabbitMQController, AppointmentsRepository appointmentsRepository) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
-        this.usersRepository=usersRepository;
-        this.roleRepository=roleRepository;
+        this.usersRepository = usersRepository;
+        this.roleRepository = roleRepository;
         this.inquiriesRepository = inquiriesRepository;
+        this.rabbitMQController = rabbitMQController;
         this.appointmentsRepository = appointmentsRepository;
-        this.restTemplate = new RestTemplate();
-
-    }
-
-
-    public ResponseEntity<String> sendTextToFlaskServer(Long inquiryId) throws Exception {
-        System.out.println("Sending text to Flask server");
-        Optional<Inquiries> optionalInquiry = inquiriesRepository.findById((inquiryId));
-        if (!optionalInquiry.isPresent()) {
-            throw new Exception("Inquiry not found with ID: " + inquiryId);
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("symptoms", optionalInquiry.get().getSymptoms());
-
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(FLASK_SERVER_URL + "/predict", requestEntity, String.class);
-
-        // Print Flask server response (for debugging purposes)
-        System.out.println(response.getBody());
-
-        return response;
     }
 
 
@@ -392,6 +370,11 @@ public class DoctorService {
                     appointments2.add(appointment);
                     doctor.setAppointments(appointments2);
                     appointmentsRepository.save(appointment);
+                    RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
+                    rabbitMQMessage.setAppointmentDate(date);
+                    rabbitMQMessage.setDoctorId(doctor.getId());
+                    rabbitMQMessage.setPatientId(patient.getId());
+                    rabbitMQController.sendMessage(rabbitMQMessage);
                     return appointments;
                 } else {
                     throw new NoSuchElementException("The date has already passed");
@@ -469,9 +452,55 @@ public class DoctorService {
         Inquiries inquiry = optionalInquiry.get();
         inquiry.setAnswer(answer);
         inquiry.setHasAnswered(true);
-        inquiriesRepository.save(inquiry);
+        RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
+        rabbitMQMessage.setDoctorAnswer(answer);
+        Doctor doctor = inquiry.getDoctor().get(0);
+        rabbitMQMessage.setDoctorId(doctor.getId());
+        if(!inquiry.getDoctor2().isEmpty()){
+            Doctor doctor2 = inquiry.getDoctor2().get(0);
+            rabbitMQMessage.setDoctor2Id(doctor2.getId());
+        }
+        if(inquiry.getPatient() != null){
+            Patient patient = inquiry.getPatient();
+            rabbitMQMessage.setPatientId(patient.getId());
+        }
+        rabbitMQController.sendMessage(rabbitMQMessage);
     }
 
+    @Transactional
+    public ResponseEntity<String> sendTextToFlaskServer(Long inquiryId) throws Exception {
+        System.out.println("Sending text to Flask server");
+        Optional<Inquiries> optionalInquiry = inquiriesRepository.findById((inquiryId));
+        if (!optionalInquiry.isPresent()) {
+            throw new Exception("Inquiry not found with ID: " + inquiryId);
+        }
+        Inquiries inquiry = optionalInquiry.get();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("symptoms", inquiry.getSymptoms());
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(FLASK_SERVER_URL + "/predict", requestEntity, String.class);
+
+
+        System.out.println(response.getBody());
+        JSONObject responseJson = new JSONObject(response.getBody());
+        int maxIndex = responseJson.getInt("max_index");
+        String matchingRowJson = responseJson.optString("matching_row");
+        int rowNumber = responseJson.getInt("row_number");
+        String matchingDisease = responseJson.optString("mainDisease");
+
+        Prediction prediction = new Prediction();
+        prediction.setMaxIndex(maxIndex);
+        prediction.setMatchingRow(matchingRowJson);
+        prediction.setPredictionRowNumber(rowNumber);
+        prediction.setMatchingDisease(matchingDisease);
+        optionalInquiry.get().setPrediction(prediction);
+        return response;
+    }
 
 }
 

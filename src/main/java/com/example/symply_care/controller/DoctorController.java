@@ -1,12 +1,12 @@
 package com.example.symply_care.controller;
 
+import com.example.symply_care.Publisher.RabbitMQProducer;
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.Appointments;
 import com.example.symply_care.entity.Inquiries;
 import com.example.symply_care.entity.Users;
 import com.example.symply_care.service.DoctorService;
-import com.example.symply_care.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +22,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/doctors")
 @RequiredArgsConstructor
-
 public class DoctorController {
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private DoctorService doctorService;
-    @Autowired
-    private EmailService emailService;
 
 
     @GetMapping("/doctors")
@@ -144,13 +140,14 @@ public class DoctorController {
         return ResponseEntity.ok().body("error answering AI");
     }
 
-    @PostMapping("/send-email")
-    public String sendEmail(
-                            @RequestParam String to,
-                            @RequestParam String subject,
-                            @RequestParam String body) {
-        // Call the sendEmail method of EmailService
-        return emailService.sendEmail(to, subject, body);
-    }
+    // @PostMapping("/send-email")
+    // public String sendEmail(
+    //                         @RequestParam String to,
+    //                         @RequestParam String subject,
+    //                         @RequestParam String body) {
+    //     // Call the sendEmail method of EmailService
+    //     return emailService.sendEmail(to, subject, body);
+    // }
+
 
 }

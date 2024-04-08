@@ -8,6 +8,9 @@ import lombok.Data;
 @Embeddable
 public class Prediction {
 
-    private String disease;
-    private double percentage;
+    private Integer maxIndex;
+    private String matchingRow;
+    private Integer predictionRowNumber;
+    private String matchingDisease;
 }
+

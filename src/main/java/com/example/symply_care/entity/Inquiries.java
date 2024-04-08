@@ -50,9 +50,8 @@ public class Inquiries {
     private Patient patient;
 
     @Column()
-    @ElementCollection
     @JsonIgnore
-    private List<Prediction> predictions;
+    private Prediction prediction;
 
     @Column(nullable = false)
     private String symptoms;
