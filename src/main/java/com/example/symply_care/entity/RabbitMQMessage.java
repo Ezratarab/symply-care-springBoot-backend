@@ -9,9 +9,11 @@ import java.util.Map;
 
 @Data
 public class RabbitMQMessage {
-    private Long doctorId;
-    private Long patientId;
-    private Long doctor2Id;
+    private String doctorEmail;
+    private String patientEmail;
+    private String doctor2Email;
+    private String senderInquiryEmail;
+    private String question;
     private String doctorAnswer;
     private String appointmentDate;
 }

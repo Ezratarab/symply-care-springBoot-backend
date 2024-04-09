@@ -280,7 +280,14 @@ public class DoctorService {
                 patientInquiries.add(savedInquiry);
                 patient.setInquiries(patientInquiries);
                 patientRepository.save(patient);
-
+                RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
+                rabbitMQMessage.setDoctorEmail(doctor.getEmail());
+                rabbitMQMessage.setSenderInquiryEmail(doctor.getEmail());
+                rabbitMQMessage.setQuestion(inquiry.getSymptoms());
+                if(inquiry.getPatient()!=null){
+                    rabbitMQMessage.setPatientEmail(inquiry.getPatient().getEmail());
+                }
+                rabbitMQController.sendMessage(rabbitMQMessage);
                 return patientInquiries;
             } else {
                 throw new NoSuchElementException("Patient not found with id: " + patientID);
@@ -322,6 +329,12 @@ public class DoctorService {
                 doctors2Inquiries.add(inquiry);
                 doctor2.setInquiries(doctors2Inquiries);
                 doctorRepository.save(doctor2);
+                RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
+                rabbitMQMessage.setDoctorEmail(doctor.getEmail());
+                rabbitMQMessage.setSenderInquiryEmail(doctor.getEmail());
+                rabbitMQMessage.setQuestion(inquiry.getSymptoms());
+                rabbitMQMessage.setDoctor2Email(doctor2.getEmail());
+                rabbitMQController.sendMessage(rabbitMQMessage);
                 return doctor.getInquiries();
             } else {
                 throw new NoSuchElementException("Doctor2 not found with id: " + optionalDoctor2.get().getId());
@@ -372,8 +385,8 @@ public class DoctorService {
                     appointmentsRepository.save(appointment);
                     RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
                     rabbitMQMessage.setAppointmentDate(date);
-                    rabbitMQMessage.setDoctorId(doctor.getId());
-                    rabbitMQMessage.setPatientId(patient.getId());
+                    rabbitMQMessage.setDoctorEmail(doctor.getEmail());
+                    rabbitMQMessage.setPatientEmail(patient.getEmail());
                     rabbitMQController.sendMessage(rabbitMQMessage);
                     return appointments;
                 } else {
@@ -453,16 +466,19 @@ public class DoctorService {
         inquiry.setAnswer(answer);
         inquiry.setHasAnswered(true);
         RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
+        rabbitMQMessage.setQuestion(inquiry.getSymptoms());
         rabbitMQMessage.setDoctorAnswer(answer);
         Doctor doctor = inquiry.getDoctor().get(0);
-        rabbitMQMessage.setDoctorId(doctor.getId());
+        rabbitMQMessage.setDoctorEmail(doctor.getEmail());
         if(!inquiry.getDoctor2().isEmpty()){
             Doctor doctor2 = inquiry.getDoctor2().get(0);
-            rabbitMQMessage.setDoctor2Id(doctor2.getId());
+            inquiry.setSenderId(doctor2.getId());
+            rabbitMQMessage.setSenderInquiryEmail(doctor2.getEmail());
+            rabbitMQMessage.setDoctor2Email(doctor2.getEmail());
         }
-        if(inquiry.getPatient() != null){
+        else if(inquiry.getPatient() != null){
             Patient patient = inquiry.getPatient();
-            rabbitMQMessage.setPatientId(patient.getId());
+            rabbitMQMessage.setPatientEmail(patient.getEmail());
         }
         rabbitMQController.sendMessage(rabbitMQMessage);
     }

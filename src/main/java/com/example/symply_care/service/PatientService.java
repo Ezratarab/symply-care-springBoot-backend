@@ -1,5 +1,6 @@
 package com.example.symply_care.service;
 
+import com.example.symply_care.controller.RabbitMQController;
 import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.*;
@@ -33,18 +34,19 @@ public class PatientService {
     private final RoleRepository roleRepository;
     private final InquiriesRepository inquiriesRepository;
     private final AppointmentsRepository appointmentsRepository;
+    private final RabbitMQController rabbitMQController;
     @Autowired
     @Lazy
     private DoctorService doctorService;
 
-
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository) {
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository, RabbitMQController rabbitMQController) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.usersRepository = usersRepository;
-        this.roleRepository=roleRepository;
+        this.roleRepository = roleRepository;
         this.inquiriesRepository = inquiriesRepository;
         this.appointmentsRepository = appointmentsRepository;
+        this.rabbitMQController = rabbitMQController;
     }
 
     @Transactional
@@ -238,16 +240,6 @@ public class PatientService {
     }
     public List<Appointments> getAppointments() {
         return appointmentsRepository.findAll();    }
-    @Transactional
-
-    public Appointments createAppointment(Long id, Appointments appointment) {
-        Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + id));
-        List<Appointments> appointments = patient.getAppointments();
-        appointments.add(appointment);
-        patient.setAppointments(appointments);
-        return appointment;
-    }
 
     @Transactional
     public List<DoctorDTO> addDoctorToPatient(Long patientID, Long doctorID) {
@@ -305,6 +297,11 @@ public class PatientService {
                     appointments2.add(appointment);
                     doctor.setAppointments(appointments2);
                     appointmentsRepository.save(appointment);
+                    RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
+                    rabbitMQMessage.setAppointmentDate(date);
+                    rabbitMQMessage.setDoctorEmail(doctor.getEmail());
+                    rabbitMQMessage.setPatientEmail(patient.getEmail());
+                    rabbitMQController.sendMessage(rabbitMQMessage);
                     return appointments;
                 } else {
                     throw new NoSuchElementException("The date has already passed");
@@ -349,6 +346,12 @@ public class PatientService {
                 patientInquiries.add(savedInquiry);
                 patient.setInquiries(patientInquiries);
                 patientRepository.save(patient);
+                RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
+                rabbitMQMessage.setDoctorEmail(doctor.getEmail());
+                rabbitMQMessage.setSenderInquiryEmail(patient.getEmail());
+                rabbitMQMessage.setQuestion(inquiry.getSymptoms());
+                rabbitMQMessage.setPatientEmail(patient.getEmail());
+                rabbitMQController.sendMessage(rabbitMQMessage);
                 return patientInquiries;
             }else{
                 throw new NoSuchElementException("Doctor not found with id: " + optionalDoctor.get().getId());

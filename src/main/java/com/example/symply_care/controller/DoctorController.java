@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,6 +44,7 @@ public class DoctorController {
     public ResponseEntity<DoctorDTO> getDoctorById(@PathVariable Long id) throws Exception {
         return ResponseEntity.ok(doctorService.getDoctorByID(id));
     }
+    @Transactional
     @GetMapping("/doctor/E{email}")
     public ResponseEntity<DoctorDTO> getDoctorByEmail(@PathVariable String email) throws Exception {
         return ResponseEntity.ok(doctorService.getDoctorByEmail(email));

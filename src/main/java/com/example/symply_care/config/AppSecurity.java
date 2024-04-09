@@ -36,13 +36,13 @@ public class AppSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())// to check with Eli
+                .cors(cors -> cors.disable())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/test/**", "/login/**", "/logout/**","/home/**",
-                                "/refresh_token/**","/doctors/**","/rabbitmq/**" ,"/patients/**","/home/**","/signup/**","/about/**","/cntactus/**").permitAll()
+                                "/refresh_token/**","/doctors/**","/rabbitmq/**" ,"/patients/**","/home/**","/signup/**","/email/**","/about/**","/cntactus/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("DOCTOR")
                         .anyRequest().authenticated())
 

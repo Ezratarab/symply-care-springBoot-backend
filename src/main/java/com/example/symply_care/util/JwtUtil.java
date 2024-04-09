@@ -95,7 +95,6 @@ public class JwtUtil {
         }
     }
 
-
     //פועל בעת פעולת הrefresh. פעולה זו יוצרת token
     public String generateTokenFromUsername(String email) {
         Optional<Users> user = usersRepository.findByEmail(email);
