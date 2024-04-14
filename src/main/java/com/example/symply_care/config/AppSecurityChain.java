@@ -7,6 +7,7 @@ import com.example.symply_care.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration // מסמנים כך מחלקה שיוצרת הרבה beans על מנת שspring יוכל לעבד את כל הbeans ולקשר ביניהם
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class AppSecurity {
+public class AppSecurityChain {
 
     final private CustomUserDetailsService userDetailsService;
     final private JwtUtil jwtUtil;
@@ -36,16 +37,16 @@ public class AppSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
+                .cors(cors -> cors.configure(http))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/test/**", "/login/**", "/logout/**","/home/**",
-                                "/refresh_token/**","/doctors/**","/rabbitmq/**" ,"/patients/**","/home/**","/signup/**","/email/**","/about/**","/cntactus/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/login/**", "/signup/**", "/doctors/doctors").permitAll()
+                        .requestMatchers("/logout/**", "/refresh_token/**", "/doctors/**", "/rabbitmq/**",
+                                "/patients/**", "/email/**").hasAnyRole("PATIENT", "DOCTOR")
                         .anyRequest().authenticated())
-
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessHandler(customLogoutHandler)
@@ -56,6 +57,7 @@ public class AppSecurity {
 
         return http.build();
     }
+
 
     //מנהל האימות בשביל spring
     @Bean
@@ -68,6 +70,6 @@ public class AppSecurity {
     //מגדיר שנוכל לגשת לurl של static והלאה ללא צורך באימות
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("static/**");
+        return web -> web.ignoring().requestMatchers("static/**");
     }
 }

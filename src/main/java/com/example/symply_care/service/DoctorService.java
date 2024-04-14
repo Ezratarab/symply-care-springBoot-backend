@@ -2,6 +2,7 @@ package com.example.symply_care.service;
 
 import com.example.symply_care.controller.RabbitMQController;
 import com.example.symply_care.dto.DoctorDTO;
+import com.example.symply_care.dto.DoctorShortDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.*;
 import com.example.symply_care.repository.*;
@@ -57,7 +58,6 @@ public class DoctorService {
 
 
     @Transactional
-
     public DoctorDTO mapDoctorToDoctorDTO(Doctor doctor) {
         if (doctor != null) {
             DoctorDTO doctorDTO = new DoctorDTO();
@@ -81,9 +81,24 @@ public class DoctorService {
         }
         return null;
     }
+    @Transactional
+    public DoctorShortDTO mapDoctorToDoctorShortDTO(Doctor doctor) {
+        if (doctor != null) {
+            DoctorShortDTO doctorShortDTO = new DoctorShortDTO();
+            doctorShortDTO.setFirstName(doctor.getFirstName());
+            doctorShortDTO.setLastName(doctor.getLastName());
+            doctorShortDTO.setEmail(doctor.getEmail());
+            doctorShortDTO.setHmo(doctor.getHmo());
+            doctorShortDTO.setExperience(doctor.getExperience());
+            doctorShortDTO.setHospital(doctor.getHospital());
+            doctorShortDTO.setSpecialization(doctor.getSpecialization());
+            doctorShortDTO.setImageData(doctor.getImageData());
+            return doctorShortDTO;
+        }
+        return null;
+    }
 
     @Transactional
-
     public Doctor mapDoctorDTOToDoctor(DoctorDTO doctorDTO) {
         Doctor doctor = new Doctor();
         doctor.setId(doctorDTO.getId());
@@ -122,7 +137,15 @@ public class DoctorService {
     }
 
     @Transactional
-
+    public List<DoctorShortDTO> getAllShortDoctors() {
+        List<Doctor> doctors = doctorRepository.findAll();
+        List<DoctorShortDTO> doctorShortDTOS = new ArrayList<>();
+        for (int i = 0; i < doctors.size(); i++) {
+            doctorShortDTOS.add(mapDoctorToDoctorShortDTO(doctors.get(i)));
+        }
+        return doctorShortDTOS;
+    }
+    @Transactional
     public List<DoctorDTO> getAllDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();
         List<DoctorDTO> doctorDTOS = new ArrayList<>();
@@ -297,18 +320,23 @@ public class DoctorService {
         }
     }
 
-
     @Transactional
     public List<Inquiries> addInquiryToDoctor(Long doctorID, Map<String, Object> inquiryData) {
         Map<String, Object> doctorData = (Map<String, Object>) inquiryData.get("doctor2");
-        Long doctor2ID = ((Number) doctorData.get("id")).longValue();
+        String doctor2Email = null;
+        Object doctor2EmailObject = doctorData.get("email");
+        if (doctor2EmailObject != null) {
+            doctor2Email = (String) doctor2EmailObject;
+        } else {
+            // Handle the case where the doctor2 ID is null
+            throw new IllegalArgumentException("Doctor2 Email cannot be null");
+        }
 
         String symptoms = (String) inquiryData.get("symptoms");
-
         Optional<Doctor> optionalDoctor = doctorRepository.findById(doctorID);
         if (optionalDoctor.isPresent()) {
             Doctor doctor = optionalDoctor.get();
-            Optional<Doctor> optionalDoctor2 = doctorRepository.findById(doctor2ID);
+            Optional<Doctor> optionalDoctor2 = doctorRepository.findByEmail(doctor2Email);
             if (optionalDoctor2.isPresent()) {
                 Doctor doctor2 = optionalDoctor2.get();
                 Inquiries inquiry = new Inquiries();
@@ -337,7 +365,7 @@ public class DoctorService {
                 rabbitMQController.sendMessage(rabbitMQMessage);
                 return doctor.getInquiries();
             } else {
-                throw new NoSuchElementException("Doctor2 not found with id: " + optionalDoctor2.get().getId());
+                throw new NoSuchElementException("Doctor2 not found with email: " + doctor2Email);
             }
         } else {
             throw new NoSuchElementException("Doctor not found with id: " + doctorID);
@@ -457,7 +485,7 @@ public class DoctorService {
             throw new Exception("Could not store file " + file, ex);
         }
     }
-    public void answerInquiry(Long inquiryId,String answer) throws Exception {
+    public void answerInquiry(Long inquiryId, String answer) throws Exception {
         Optional<Inquiries> optionalInquiry = inquiriesRepository.findById(inquiryId);
         if (!optionalInquiry.isPresent()) {
             throw new Exception("Inquiry not found with ID: " + inquiryId);
@@ -465,6 +493,7 @@ public class DoctorService {
         Inquiries inquiry = optionalInquiry.get();
         inquiry.setAnswer(answer);
         inquiry.setHasAnswered(true);
+
         RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
         rabbitMQMessage.setQuestion(inquiry.getSymptoms());
         rabbitMQMessage.setDoctorAnswer(answer);
@@ -478,10 +507,13 @@ public class DoctorService {
         }
         else if(inquiry.getPatient() != null){
             Patient patient = inquiry.getPatient();
+            rabbitMQMessage.setSenderInquiryEmail(doctor.getEmail());
             rabbitMQMessage.setPatientEmail(patient.getEmail());
         }
+        inquiriesRepository.save(inquiry);
         rabbitMQController.sendMessage(rabbitMQMessage);
     }
+
 
     @Transactional
     public ResponseEntity<String> sendTextToFlaskServer(Long inquiryId) throws Exception {

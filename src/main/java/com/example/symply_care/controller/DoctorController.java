@@ -2,6 +2,7 @@ package com.example.symply_care.controller;
 
 import com.example.symply_care.Publisher.RabbitMQProducer;
 import com.example.symply_care.dto.DoctorDTO;
+import com.example.symply_care.dto.DoctorShortDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.Appointments;
 import com.example.symply_care.entity.Inquiries;
@@ -30,6 +31,11 @@ public class DoctorController {
 
 
     @GetMapping("/doctors")
+    public ResponseEntity<List<DoctorShortDTO>> getAllShortDoctors() {
+        return ResponseEntity.ok(doctorService.getAllShortDoctors());
+    }
+
+    @GetMapping("/fullDoctors")
     public ResponseEntity<List<DoctorDTO>> getAllDoctors() {
         return ResponseEntity.ok(doctorService.getAllDoctors());
     }

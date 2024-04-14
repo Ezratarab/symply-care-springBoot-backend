@@ -56,7 +56,7 @@ public class RabbitMQConsumer {
 
             String subject = "New Appointment has scheduled for you!";
             String body = "<html><body>" +
-                    "<h2>Hi! it's SYMPly - Care</h2>" +
+                    "<h1 style=\"color:royalblue;\">Hi! it's SYMPly - Care</h1>" +
                     "<p>A new meeting has been scheduled for you with these details:</p>" +
                     "<ul>" +
                     "<li><strong>Doctor:</strong> " + doctor.getFirstName()+" "+doctor.getLastName() + "</li>" +
@@ -73,11 +73,11 @@ public class RabbitMQConsumer {
     }
 
     private void sendInquiryEmail(RabbitMQMessage rabbitMQMessage, DoctorDTO doctor) throws Exception {
-        PatientDTO patient=null;
-        DoctorDTO doctor2=null;
-        String recipientEmail=null;
+        PatientDTO patient = null;
+        DoctorDTO doctor2 = null;
+        String recipientEmail = null;
         String recipientName = null;
-        if(rabbitMQMessage.getPatientEmail()!=null){
+        if (rabbitMQMessage.getPatientEmail() != null) {
             ResponseEntity<PatientDTO> patientResponseEntity = patientController.getPatientByEmail(rabbitMQMessage.getPatientEmail());
             patient = patientResponseEntity.getBody();
         } else {
@@ -88,22 +88,23 @@ public class RabbitMQConsumer {
             String senderInquiryEmail = rabbitMQMessage.getSenderInquiryEmail();
             String senderName = (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctorEmail())) ?
                     "Doctor" : "Patient";
-            if(patient!=null){
+            if (patient != null) {
                 recipientEmail = (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctorEmail())) ?
                         rabbitMQMessage.getPatientEmail() : rabbitMQMessage.getDoctorEmail();
-                recipientName = (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctorEmail()))?
-                        patient.getFirstName()+" "+patient.getLastName() : doctor.getFirstName()+" "+doctor.getLastName();
-            }
-            else{
+                recipientName = (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctorEmail())) ?
+                        patient.getFirstName() + " " + patient.getLastName() : doctor.getFirstName() + " " + doctor.getLastName();
+            } else {
                 recipientEmail = rabbitMQMessage.getDoctor2Email();
-                recipientName = doctor2.getFirstName()+" "+doctor2.getLastName();
+                recipientName = doctor2.getFirstName() + " " + doctor2.getLastName();
             }
 
-            String subject = "New Inquiry has waiting for your response!";
-            String body = "Hi! its SYMPly - Care\n\n" + "A new inquiry is waiting for you with these details:\n\n"
-                    + "from " + senderName + ": " + (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctorEmail()) ? doctor.getFirstName()+" "+doctor.getLastName() : patient.getFirstName()+" "+patient.getLastName()) + "\n" // Corrected this line
-                    + "To you: "+ recipientName + "\n"
-                    +"For more details check the website in your profile";
+            String subject = "New Inquiry is waiting for your response!";
+            String body = "<html><body><h1 style=\"color:royalblue;\">Hi! it's SYMPly - Care</h1><br/><br/>"
+                    + "<p>A new inquiry is waiting for you with these details:</p>"
+                    + "<p>From " + senderName + ": " + (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctorEmail()) ? doctor.getFirstName() + " " + doctor.getLastName() : patient.getFirstName() + " " + patient.getLastName()) + "</p>"
+                    + "<p>To you: " + recipientName + "</p>"
+                    + "<p>For more details, check the website in your profile.</p>"
+                    + "</body></html>";
 
             emailSendController.sendEmail(recipientEmail, subject, body, null);
         } catch (Exception e) {
@@ -117,32 +118,34 @@ public class RabbitMQConsumer {
         String recipientEmail = null;
         String recipientName = null;
         PatientDTO patient = null;
-        DoctorDTO doctor2=null;
+        DoctorDTO doctor2 = null;
         try {
             String senderInquiryEmail = rabbitMQMessage.getSenderInquiryEmail();
-            if(Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctor2Email())){
+            if (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctor2Email())) {
                 recipientEmail = rabbitMQMessage.getDoctorEmail();
-                recipientName =  doctor.getFirstName()+" "+doctor.getLastName();
+                recipientName = doctor.getFirstName() + " " + doctor.getLastName();
                 ResponseEntity<DoctorDTO> doctor2ResponseEntity = doctorController.getDoctorByEmail(rabbitMQMessage.getDoctor2Email());
                 doctor2 = doctor2ResponseEntity.getBody();
-            }
-            else{
+            } else {
                 ResponseEntity<PatientDTO> patientResponseEntity = patientController.getPatientByEmail(rabbitMQMessage.getPatientEmail());
                 patient = patientResponseEntity.getBody();
                 recipientEmail = rabbitMQMessage.getPatientEmail();
-                recipientName = patient.getFirstName()+" "+patient.getLastName();
+                recipientName = patient.getFirstName() + " " + patient.getLastName();
             }
             String subject = "Your inquiry has been answered!";
-            String body = "Hi! its SYMPly - Care\n\n" + "A new inquiry is waiting for you with these details:\n\n"
-                    + "Doctor: " + (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctor2Email()) ?
-                    doctor2.getFirstName()+" "+doctor2.getLastName() :doctor.getFirstName()+" "+doctor.getLastName()) + "\n"
-                    + "To you:  "+ recipientName +"\n"
-                    +"For more details check the website in your profile";
+            String body = "<html><body><h1 style=\"color:royalblue;\">Hi! it's SYMPly - Care</h1><br/><br/>"
+                    + "<p>A new inquiry has been answered with these details:</p>"
+                    + "<p>Doctor: " + (Objects.equals(senderInquiryEmail, rabbitMQMessage.getDoctor2Email()) ?
+                    doctor2.getFirstName() + " " + doctor2.getLastName() : doctor.getFirstName() + " " + doctor.getLastName()) + "</p>"
+                    + "<p>To you: " + recipientName + "</p>"
+                    + "<p>For more details, check the website in your profile.</p>"
+                    + "</body></html>";
 
             emailSendController.sendEmail(recipientEmail, subject, body, null);
         } catch (Exception e) {
             LOGGER.error("Error sending answer email: " + e.getMessage());
         }
     }
+
 
 }
