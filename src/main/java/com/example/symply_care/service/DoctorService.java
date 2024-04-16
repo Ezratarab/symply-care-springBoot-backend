@@ -130,7 +130,7 @@ public class DoctorService {
         user.setEmail(doctor.getEmail());
         user.setPassword(doctor.getPassword());
         List<Role> userRoles = user.getRoles();
-        userRoles.add(roleRepository.findByRole("DOCTOR"));
+        userRoles.add(roleRepository.findByRole("ROLE_DOCTOR"));
         user.setRoles(userRoles);
         usersRepository.save(user);
         return doctorDTO;

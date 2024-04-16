@@ -43,7 +43,7 @@ public class AppSecurityChain {
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/login/**", "/signup/**", "/doctors/doctors").permitAll()
+                        .requestMatchers("/login/**", "/signup/**", "/doctors/doctors","/doctors/addDoctor","/patients/addPatient").permitAll()
                         .requestMatchers("/logout/**", "/refresh_token/**", "/doctors/**", "/rabbitmq/**",
                                 "/patients/**", "/email/**").hasAnyRole("PATIENT", "DOCTOR")
                         .anyRequest().authenticated())

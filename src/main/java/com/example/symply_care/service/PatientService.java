@@ -111,7 +111,7 @@ public class PatientService {
         user.setEmail(patient.getEmail());
         user.setPassword(patient.getPassword());
         List<Role> userRoles = user.getRoles();
-        userRoles.add(roleRepository.findByRole("PATIENT"));
+        userRoles.add(roleRepository.findByRole("ROLE_PATIENT"));
         System.out.println(userRoles);
         user.setRoles(userRoles);
         usersRepository.save(user);
