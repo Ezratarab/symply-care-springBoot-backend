@@ -211,6 +211,7 @@ public class DoctorService {
 
         List<Patient> patients = doctor.getPatients();
 
+
         return patients.stream()
                 .map(patientService::mapPatientToPatientDTO)
                 .collect(Collectors.toList());
