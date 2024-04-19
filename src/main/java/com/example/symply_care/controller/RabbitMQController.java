@@ -25,4 +25,14 @@ public class RabbitMQController {
                     .body("Failed to send message to RabbitMQ: " + e.getMessage());
         }
     }
+    @GetMapping("/publishToAdmin")
+    public ResponseEntity<String> sendMessageToAdmin(@RequestBody RabbitMQMessage message) {
+        try {
+            producer.sendMessage(message);
+            return ResponseEntity.ok("Message sent to RabbitMQ. ---TO ADMIN----");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to send message to RabbitMQ: " + e.getMessage());
+        }
+    }
 }

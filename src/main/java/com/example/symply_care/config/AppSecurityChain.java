@@ -1,6 +1,7 @@
 package com.example.symply_care.config;
 
 
+import com.example.symply_care.controller.RabbitMQController;
 import com.example.symply_care.service.CustomLogoutHandler;
 import com.example.symply_care.service.CustomUserDetailsService;
 import com.example.symply_care.util.JwtUtil;
@@ -28,6 +29,9 @@ public class AppSecurityChain {
     final private JwtUtil jwtUtil;
     final private CustomLogoutHandler customLogoutHandler;
 
+
+
+
     @Bean //על מנת ליצור עצם של פעולה!! מבלי תוספת קוד
     public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -43,7 +47,7 @@ public class AppSecurityChain {
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/login/**", "/signup/**", "/doctors/doctors","/doctors/addDoctor","/patients/addPatient").permitAll()
+                        .requestMatchers("/changePassword/**","/contactUs/**","/login/**", "/signup/**", "/doctors/doctors","/doctors/addDoctor","/patients/addPatient").permitAll()
                         .requestMatchers("/logout/**", "/refresh_token/**", "/doctors/**", "/rabbitmq/**",
                                 "/patients/**", "/email/**").hasAnyRole("PATIENT", "DOCTOR")
                         .anyRequest().authenticated())

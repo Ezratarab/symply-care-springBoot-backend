@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLDecoder;
 import java.util.Objects;
 
 @Service
@@ -34,7 +35,7 @@ public class RabbitMQConsumer {
     @RabbitListener(queues = {"${rabbitmq.queue.name}"})
     public void consume(RabbitMQMessage rabbitMQMessage) throws Exception {
         LOGGER.info(String.format("Recieved message -> %s", rabbitMQMessage.toString()));
-
+if(rabbitMQMessage.getEmail()==null){
         // Get doctor info
         ResponseEntity<DoctorDTO> doctorResponseEntity = doctorController.getDoctorByEmail(rabbitMQMessage.getDoctorEmail());
         DoctorDTO doctor = doctorResponseEntity.getBody();
@@ -47,6 +48,10 @@ public class RabbitMQConsumer {
         } else {
             sendAnswerEmail(rabbitMQMessage, doctor);
         }
+    }
+    else{
+        sendMessageToAdmin(rabbitMQMessage);
+    }
     }
 
     private void sendAppointmentEmail(RabbitMQMessage rabbitMQMessage, DoctorDTO doctor) {
@@ -142,6 +147,25 @@ public class RabbitMQConsumer {
                     + "</body></html>";
 
             emailSendController.sendEmail(recipientEmail, subject, body, null);
+        } catch (Exception e) {
+            LOGGER.error("Error sending answer email: " + e.getMessage());
+        }
+    }
+    private void sendMessageToAdmin(RabbitMQMessage rabbitMQMessage) {
+        try {
+            // Decode the message
+            String decodedMessage = URLDecoder.decode(rabbitMQMessage.getMessage(), "UTF-8");
+
+            String subject = "Hello Ezra, You have received a message from someone interested in contacting you regarding your application.";
+            String body = "<html><body><h1 style=\"color:royalblue;\">Hi! it's SYMPly - Care</h1><br/><br/>"
+                    + "<p>Information:</p>"
+                    + "<p>Message: " + decodedMessage + "</p>"
+                    + "<p>From this Email Address: " + rabbitMQMessage.getEmail() + "</p>"
+                    + "<p>For more details, check the website in your profile.</p>"
+                    + "</body></html>";
+
+            // Send the email with the decoded message
+            emailSendController.sendEmail(rabbitMQMessage.getAdminEmail(), subject, body, null);
         } catch (Exception e) {
             LOGGER.error("Error sending answer email: " + e.getMessage());
         }

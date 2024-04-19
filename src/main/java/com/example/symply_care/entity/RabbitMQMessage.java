@@ -16,4 +16,8 @@ public class RabbitMQMessage {
     private String question;
     private String doctorAnswer;
     private String appointmentDate;
+    //for contect us
+    private String Email;
+    private String Message;
+    private String AdminEmail = "ezra5385@gmail.com";
 }

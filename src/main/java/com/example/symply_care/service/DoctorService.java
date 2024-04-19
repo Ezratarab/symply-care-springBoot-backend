@@ -16,6 +16,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -26,11 +28,14 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Valid
+@EnableScheduling
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
@@ -81,6 +86,7 @@ public class DoctorService {
         }
         return null;
     }
+
     @Transactional
     public DoctorShortDTO mapDoctorToDoctorShortDTO(Doctor doctor) {
         if (doctor != null) {
@@ -145,6 +151,7 @@ public class DoctorService {
         }
         return doctorShortDTOS;
     }
+
     @Transactional
     public List<DoctorDTO> getAllDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();
@@ -158,18 +165,17 @@ public class DoctorService {
     @Transactional
     public DoctorDTO getDoctorByID(Long id) {
         DoctorDTO doctorDTO = mapDoctorToDoctorDTO(doctorRepository.findById(id).orElse(null));
-        if (doctorDTO != null)
-            return doctorDTO;
+        if (doctorDTO != null) return doctorDTO;
         throw new IllegalArgumentException("Doctor not found");
     }
 
     @Transactional
     public DoctorDTO getDoctorByEmail(String email) {
         DoctorDTO doctorDTO = mapDoctorToDoctorDTO(doctorRepository.findByEmail(email).orElse(null));
-        if (doctorDTO != null)
-            return doctorDTO;
+        if (doctorDTO != null) return doctorDTO;
         throw new IllegalArgumentException("Doctor not found");
     }
+
     @Transactional
     public Doctor updateDoctorDetails(Doctor doctor, DoctorDTO doctorDTO) {
         doctor.setFirstName(doctorDTO.getFirstName());
@@ -180,17 +186,18 @@ public class DoctorService {
         doctor.setBirthDay(doctorDTO.getBirthDay());
         return doctor;
     }
+
     @Transactional
     public DoctorDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
         if (doctorDTO == null || doctorDTO.getEmail() == null) {
             throw new IllegalArgumentException("Invalid Doctor data.");
         }
-        Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
-        doctor = updateDoctorDetails(doctor,doctorDTO);
+        Doctor doctor = doctorRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+        doctor = updateDoctorDetails(doctor, doctorDTO);
         doctor = doctorRepository.save(doctor);
         return mapDoctorToDoctorDTO(doctor);
     }
+
     @Transactional
     public void deleteDoctor(Long id) throws Exception {
         Optional<Doctor> optionalDoctor = doctorRepository.findById(id);
@@ -206,32 +213,30 @@ public class DoctorService {
 
     @Transactional
     public List<PatientDTO> getPatientsOfDoctor(Long id) {
-        Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + id));
+        Doctor doctor = doctorRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + id));
 
         List<Patient> patients = doctor.getPatients();
 
 
-        return patients.stream()
-                .map(patientService::mapPatientToPatientDTO)
-                .collect(Collectors.toList());
+        return patients.stream().map(patientService::mapPatientToPatientDTO).collect(Collectors.toList());
     }
+
     @Transactional
 
     public List<Inquiries> getInquiriesOfDoctor(Long id) {
-        Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + id));
+        Doctor doctor = doctorRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + id));
 
         return doctor.getInquiries();
     }
+
     @Transactional
 
     public List<Appointments> getAppointmentsOfDoctor(Long id) {
-        Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + id));
+        Doctor doctor = doctorRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + id));
 
         return doctor.getAppointments();
     }
+
     @Transactional
     public String deleteAppointment(Long id) throws Exception {
         Optional<Appointments> optionalAppointment = appointmentsRepository.findById(id);
@@ -252,20 +257,17 @@ public class DoctorService {
 
     @Transactional
     public List<PatientDTO> addPatientToDoctor(Long doctorID, Long PatientID) {
-        Doctor doctor = doctorRepository.findById(doctorID)
-                .orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
-        Patient patient = patientRepository.findById(PatientID)
-                .orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + PatientID));
+        Doctor doctor = doctorRepository.findById(doctorID).orElseThrow(() -> new NoSuchElementException("Doctor not found with id: " + doctorID));
+        Patient patient = patientRepository.findById(PatientID).orElseThrow(() -> new NoSuchElementException("Patient not found with id: " + PatientID));
         List<Patient> patients = doctor.getPatients();
         patients.add(patient);
         doctor.setPatients(patients);
         List<Doctor> patientDoctors = patient.getDoctors();
         patientDoctors.add(doctor);
         patient.setDoctors(patientDoctors);
-        return patients.stream()
-                .map(patientService::mapPatientToPatientDTO)
-                .collect(Collectors.toList());
+        return patients.stream().map(patientService::mapPatientToPatientDTO).collect(Collectors.toList());
     }
+
     public Date convertStringToDate(String dateString) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return sdf.parse(dateString);
@@ -289,7 +291,7 @@ public class DoctorService {
                 List<Doctor> doctors = new ArrayList<>();
                 doctors.add(doctor);
                 inquiry.setDoctor(doctors);
-
+                inquiry.setCreatedAt(LocalDateTime.now());
                 inquiry.setPatient(patient);
                 inquiry.setSenderId(doctorID);
                 inquiry.setSymptoms(symptoms);
@@ -308,7 +310,7 @@ public class DoctorService {
                 rabbitMQMessage.setDoctorEmail(doctor.getEmail());
                 rabbitMQMessage.setSenderInquiryEmail(doctor.getEmail());
                 rabbitMQMessage.setQuestion(inquiry.getSymptoms());
-                if(inquiry.getPatient()!=null){
+                if (inquiry.getPatient() != null) {
                     rabbitMQMessage.setPatientEmail(inquiry.getPatient().getEmail());
                 }
                 rabbitMQController.sendMessage(rabbitMQMessage);
@@ -320,6 +322,41 @@ public class DoctorService {
             throw new NoSuchElementException("Doctor not found with id: " + doctorID);
         }
     }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deleteOldInquiries() {
+        LocalDateTime threeWeeksAgo = LocalDateTime.now().minus(3, ChronoUnit.WEEKS);
+
+        List<Inquiries> oldInquiries = inquiriesRepository.findByCreatedAtBefore(threeWeeksAgo);
+
+        for (Inquiries inquiry : oldInquiries) {
+            if (!inquiry.getHasAnswered()) {
+                if (inquiry.getPatient() != null) {
+                    Patient patient = inquiry.getPatient();
+                    List<Inquiries> patientInquiries = patient.getInquiries();
+                    patientInquiries.remove(inquiry);
+                    patient.setInquiries(patientInquiries);
+                    patientRepository.save(patient);
+                } else if (inquiry.getDoctor2() != null) {
+                    List<Doctor> doctor2List = inquiry.getDoctor2();
+                    Doctor doctor2 = doctor2List.get(0);
+                    List<Inquiries> doctor2Inquiries = doctor2.getInquiries();
+                    doctor2Inquiries.remove(inquiry);
+                    doctor2.setInquiries(doctor2Inquiries);
+                    doctorRepository.save(doctor2);
+                }
+                List<Doctor> doctorList = inquiry.getDoctor();
+                Doctor doctor = doctorList.get(0);
+                List<Inquiries> doctorInquiries = doctor.getInquiries();
+                doctorInquiries.remove(inquiry);
+                doctor.setInquiries(doctorInquiries);
+                doctorRepository.save(doctor);
+                inquiriesRepository.delete(inquiry);
+            }
+        }
+    }
+
 
     @Transactional
     public List<Inquiries> addInquiryToDoctor(Long doctorID, Map<String, Object> inquiryData) {
@@ -341,10 +378,11 @@ public class DoctorService {
             if (optionalDoctor2.isPresent()) {
                 Doctor doctor2 = optionalDoctor2.get();
                 Inquiries inquiry = new Inquiries();
-                List<Doctor> doctors =  new ArrayList<>();
+                List<Doctor> doctors = new ArrayList<>();
                 doctors.add(doctor);
                 inquiry.setDoctor(doctors);
-                List<Doctor> doctors2 =  new ArrayList<>();
+                inquiry.setCreatedAt(LocalDateTime.now());
+                List<Doctor> doctors2 = new ArrayList<>();
                 doctors2.add(doctor2);
                 inquiry.setDoctor2(doctors2);
                 inquiry.setSymptoms(symptoms);
@@ -449,19 +487,20 @@ public class DoctorService {
             doctor.setPatients(patients);
         }
     }
+
     @Transactional
     public void deleteDoctorFromPatients(Long id) {
         Optional<Doctor> doctor = doctorRepository.findById(id);
         List<Patient> patients = doctor.get().getPatients();
 
         for (Patient patient : patients) {
-            patientService.deleteDoctorFromPatients(doctor.get().getId(),patient.getId());
+            patientService.deleteDoctorFromPatients(doctor.get().getId(), patient.getId());
         }
 
     }
 
     @Transactional
-    public Users addRoleToDoctor(Long id, String roleName){
+    public Users addRoleToDoctor(Long id, String roleName) {
         Role role = roleRepository.findByRole(roleName);
         Optional<Doctor> doctor = doctorRepository.findById(id);
         Optional<Users> user = usersRepository.findByEmail(doctor.get().getEmail());
@@ -469,23 +508,26 @@ public class DoctorService {
         roles.add(role);
         user.get().setRoles(roles);
         Users userNew = user.get();
-        if(user.isPresent()){
-            usersRepository.save(userNew);}
+        if (user.isPresent()) {
+            usersRepository.save(userNew);
+        }
         return userNew;
     }
-    public void uploadImage(Long id,MultipartFile file) throws Exception {
+
+    public void uploadImage(Long id, MultipartFile file) throws Exception {
         Optional<Doctor> doctor = doctorRepository.findById(id);
         try {
             if (!file.isEmpty()) {
-            doctor.get().setImageData(file.getBytes());
-            doctorRepository.save(doctor.get());
-            System.out.println("File uploaded successfully");
+                doctor.get().setImageData(file.getBytes());
+                doctorRepository.save(doctor.get());
+                System.out.println("File uploaded successfully");
             }
 
         } catch (IOException ex) {
             throw new Exception("Could not store file " + file, ex);
         }
     }
+
     public void answerInquiry(Long inquiryId, String answer) throws Exception {
         Optional<Inquiries> optionalInquiry = inquiriesRepository.findById(inquiryId);
         if (!optionalInquiry.isPresent()) {
@@ -494,19 +536,18 @@ public class DoctorService {
         Inquiries inquiry = optionalInquiry.get();
         inquiry.setAnswer(answer);
         inquiry.setHasAnswered(true);
-
+        inquiry.setAnsweredAt(LocalDateTime.now());
         RabbitMQMessage rabbitMQMessage = new RabbitMQMessage();
         rabbitMQMessage.setQuestion(inquiry.getSymptoms());
         rabbitMQMessage.setDoctorAnswer(answer);
         Doctor doctor = inquiry.getDoctor().get(0);
         rabbitMQMessage.setDoctorEmail(doctor.getEmail());
-        if(!inquiry.getDoctor2().isEmpty()){
+        if (!inquiry.getDoctor2().isEmpty()) {
             Doctor doctor2 = inquiry.getDoctor2().get(0);
             inquiry.setSenderId(doctor2.getId());
             rabbitMQMessage.setSenderInquiryEmail(doctor2.getEmail());
             rabbitMQMessage.setDoctor2Email(doctor2.getEmail());
-        }
-        else if(inquiry.getPatient() != null){
+        } else if (inquiry.getPatient() != null) {
             Patient patient = inquiry.getPatient();
             rabbitMQMessage.setSenderInquiryEmail(doctor.getEmail());
             rabbitMQMessage.setPatientEmail(patient.getEmail());

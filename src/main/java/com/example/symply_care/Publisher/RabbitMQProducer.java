@@ -25,4 +25,5 @@ public class RabbitMQProducer {
         rabbitTemplate.convertAndSend(exhange,routingKey,rabbitMQMessage);
     }
 
+
 }

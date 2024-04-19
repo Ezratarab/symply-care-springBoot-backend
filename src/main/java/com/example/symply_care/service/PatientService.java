@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.SQLOutput;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -334,7 +335,7 @@ public class PatientService {
                 inquiry.setDoctor(doctors);
 
                 inquiry.setPatient(patient);
-
+                inquiry.setCreatedAt(LocalDateTime.now());
                 inquiry.setSymptoms(symptoms);
                 inquiry.setSenderId(patientID);
                 Inquiries savedInquiry = inquiriesRepository.save(inquiry);

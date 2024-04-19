@@ -8,6 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 @Entity
@@ -64,4 +65,9 @@ public class Inquiries {
 
     @Column()
     private Boolean hasAnswered = false;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    @Column(name = "answered_at")
+    private LocalDateTime answeredAt;
 }
