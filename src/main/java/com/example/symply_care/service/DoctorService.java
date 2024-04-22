@@ -29,13 +29,13 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Valid
-@EnableScheduling
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
@@ -323,40 +323,6 @@ public class DoctorService {
         }
     }
 
-    @Transactional
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void deleteOldInquiries() {
-        LocalDateTime threeWeeksAgo = LocalDateTime.now().minus(3, ChronoUnit.WEEKS);
-
-        List<Inquiries> oldInquiries = inquiriesRepository.findByCreatedAtBefore(threeWeeksAgo);
-
-        for (Inquiries inquiry : oldInquiries) {
-            if (!inquiry.getHasAnswered()) {
-                if (inquiry.getPatient() != null) {
-                    Patient patient = inquiry.getPatient();
-                    List<Inquiries> patientInquiries = patient.getInquiries();
-                    patientInquiries.remove(inquiry);
-                    patient.setInquiries(patientInquiries);
-                    patientRepository.save(patient);
-                } else if (inquiry.getDoctor2() != null) {
-                    List<Doctor> doctor2List = inquiry.getDoctor2();
-                    Doctor doctor2 = doctor2List.get(0);
-                    List<Inquiries> doctor2Inquiries = doctor2.getInquiries();
-                    doctor2Inquiries.remove(inquiry);
-                    doctor2.setInquiries(doctor2Inquiries);
-                    doctorRepository.save(doctor2);
-                }
-                List<Doctor> doctorList = inquiry.getDoctor();
-                Doctor doctor = doctorList.get(0);
-                List<Inquiries> doctorInquiries = doctor.getInquiries();
-                doctorInquiries.remove(inquiry);
-                doctor.setInquiries(doctorInquiries);
-                doctorRepository.save(doctor);
-                inquiriesRepository.delete(inquiry);
-            }
-        }
-    }
-
 
     @Transactional
     public List<Inquiries> addInquiryToDoctor(Long doctorID, Map<String, Object> inquiryData) {
@@ -466,7 +432,6 @@ public class DoctorService {
             throw new NoSuchElementException("Doctor not found with id: " + doctorID);
         }
     }
-
 
     @Transactional
     public void deletePatientFromDoctor(Long doctorId, Long patientId) {

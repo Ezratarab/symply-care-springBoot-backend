@@ -59,16 +59,20 @@ if(rabbitMQMessage.getEmail()==null){
             ResponseEntity<PatientDTO> patientResponseEntity = patientController.getPatientByEmail(rabbitMQMessage.getPatientEmail());
             PatientDTO patient = patientResponseEntity.getBody();
 
-            String subject = "New Appointment has scheduled for you!";
-            String body = "<html><body>" +
-                    "<h1 style=\"color:royalblue;\">Hi! it's SYMPly - Care</h1>" +
-                    "<p>A new meeting has been scheduled for you with these details:</p>" +
-                    "<ul>" +
-                    "<li><strong>Doctor:</strong> " + doctor.getFirstName()+" "+doctor.getLastName() + "</li>" +
-                    "<li><strong>Patient:</strong> "+ patient.getFirstName()+" "+patient.getLastName() + "</li>" +
+            String subject = "New Appointment Scheduled for You!";
+            String body = "<html>" +
+                    "<body style=\"font-family: Arial, sans-serif;\">" +
+                    "<div style=\"background-color: #f2f2f2; padding: 20px;\">" +
+                    "<h1 style=\"color:royalblue; margin-bottom: 20px;\">Hi! It's SYMPly - Care</h1>" +
+                    "<p style=\"margin-bottom: 20px;\">We are pleased to inform you that a new meeting has been scheduled for you with the following details:</p>" +
+                    "<ul style=\"margin-left: 40px;\">" +
+                    "<li style=\"margin-bottom: 10px;\"><strong>Doctor:</strong> " + doctor.getFirstName() + " " + doctor.getLastName() + "</li>" +
+                    "<li style=\"margin-bottom: 10px;\"><strong>Patient:</strong> " + patient.getFirstName() + " " + patient.getLastName() + "</li>" +
                     "</ul>" +
-                    "<p>For more details check the website in your profile</p>" +
-                    "</body></html>";
+                    "<p style=\"margin-bottom: 20px;\">For more details, please check your profile on our website.</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
 
             emailSendController.sendEmail(rabbitMQMessage.getPatientEmail(), subject, body, null);
             emailSendController.sendEmail(rabbitMQMessage.getDoctorEmail(), subject, body, null);
