@@ -25,6 +25,7 @@ public class RabbitMQController {
                     .body("Failed to send message to RabbitMQ: " + e.getMessage());
         }
     }
+    //נסיון ראשון לשליחת הודעות דרך rabbitMQ
     @GetMapping("/publishToAdmin")
     public ResponseEntity<String> sendMessageToAdmin(@RequestBody RabbitMQMessage message) {
         try {

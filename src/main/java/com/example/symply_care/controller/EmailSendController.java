@@ -15,7 +15,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/email")
 public class EmailSendController {
 
-    // changes made here
     String message = "this is a message";
 
     private EmailSendService emailSendService;
@@ -24,7 +23,6 @@ public class EmailSendController {
         this.emailSendService = emailSendService;
     }
 
-    // changes made here
     @RequestMapping("/form")
     public String emailForm(Model model) {
         model.addAttribute("message", message);
@@ -32,7 +30,6 @@ public class EmailSendController {
     }
 
     @Transactional
-    // changes made here
     @PostMapping("/send")
     public String sendEmail(@RequestParam("to") String to, @RequestParam("subject") String subject, @RequestParam("body") String body, RedirectAttributes redirectAttributes) {
         String response = emailSendService.sendEmail(to, subject, body);
@@ -45,7 +42,6 @@ public class EmailSendController {
             }
         }
 
-        // Redirect to the email form page
         return "redirect:/email/form";
     }
 

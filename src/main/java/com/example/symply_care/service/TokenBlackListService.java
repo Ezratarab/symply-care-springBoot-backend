@@ -8,9 +8,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TokenBlackListService {
+    //TODO ConcurrentHashMap להוסיף למצגת על
     private final ConcurrentHashMap<String, Instant> blacklist = new ConcurrentHashMap<>();
     public void addToBlacklist(String token) {
-        blacklist.put(token, Instant.now().plusMillis(10000));
+        blacklist.put(token, Instant.now().plusMillis(10000));//10 שניות
+        /*
+        הוספת 10 שניות לזמן כדי למנוע מתקפת brute force כלומר שתוקף לא יוכל להתחבר עם אותו משתמש ב10 שניות בהן התחבר וכך כדי למנוע מהמערכת קריסה
+         */
         System.out.println("Token added to blacklist: " + token);
         removeExpiredTokens();
     }

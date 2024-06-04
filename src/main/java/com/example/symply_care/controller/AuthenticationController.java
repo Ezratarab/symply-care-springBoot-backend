@@ -16,12 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
+@RestController
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
@@ -67,6 +66,10 @@ public class AuthenticationController {
         rabbitMQContactUsMessage.setMessage(message);
         rabbitMQContactUsMessage.setEmail(email);
         return rabbitMQController.sendMessageToAdmin(rabbitMQContactUsMessage);
+    }
+    @GetMapping("/getSpecializations")
+    public List<Specialization> getAllSpecializations() {
+        return Arrays.asList(Specialization.values());
     }
     @PostMapping("/changePassword/{email}")
     public ResponseEntity<?> changePassword(@RequestBody Map<String, Object> data, @PathVariable String email) throws Exception {

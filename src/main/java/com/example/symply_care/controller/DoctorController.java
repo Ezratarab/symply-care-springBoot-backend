@@ -21,7 +21,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@RestController //תת אנוטציה של component אין אפשרות להחליף באנטוציה כיוון שעל ידי סימון בcontroller הspring סורק את הmapping
 @RequestMapping("/doctors")
 @RequiredArgsConstructor
 public class DoctorController {
@@ -66,6 +66,15 @@ public class DoctorController {
     public ResponseEntity<Void> deleteDoctor(@PathVariable Long id) {
         try {
             doctorService.deleteDoctor(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @DeleteMapping("/deletePatientFromDoctor/{doctorId}")
+    public ResponseEntity<Void> deletePatientFromDoctor(@PathVariable Long doctorId, @RequestBody @Valid Long id) {
+        try {
+            doctorService.deletePatientFromDoctor(doctorId,id);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

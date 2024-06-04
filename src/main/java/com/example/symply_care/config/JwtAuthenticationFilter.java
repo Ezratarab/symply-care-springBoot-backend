@@ -17,13 +17,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter { //OncePerRequestFilter מאפשר הרצה עבור כל בקשה
 
     final private JwtUtil jwtUtil;
     final private CustomUserDetailsService customUserDetailsService;
 
 
-    //עושה פילטר ראשוני בתחילת ההרצה לאימות הנתונים
+    //עושה פילטר ראשוני עבור כל בקשה לאימות הנתונים
+    //מסומן בprotected על מנת שרק המחלקות היורשות שקשורות לspring security יוכלו לקרוא לה
+    //פונקציה זו דורסת את הפונקציה של האב
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain)
@@ -47,9 +49,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
-
-
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response); // המשך הפילטור או המשך מימוש הבקשה לפי הקוד זאת אומרת שימשיך במסלולו הרגיל
+        //במידה ולא יהיה שורה זאת אז הבקשה תיעצר פה
     }
 }
 

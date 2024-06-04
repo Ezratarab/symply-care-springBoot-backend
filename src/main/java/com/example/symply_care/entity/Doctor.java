@@ -22,8 +22,9 @@ import java.util.List;
 @Table(name="doctors")
 public class Doctor extends User{
 
-    @Column(nullable=false)
-    private String specialization;
+    @Column(name="specialization",nullable=false)
+    @Enumerated(EnumType.ORDINAL)
+    private Specialization specialization;
 
     @Column
     private String hospital;

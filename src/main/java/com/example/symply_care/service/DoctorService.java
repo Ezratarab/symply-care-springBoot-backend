@@ -9,15 +9,13 @@ import com.example.symply_care.repository.*;
 import jakarta.transaction.Transactional;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -29,13 +27,10 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Valid
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
@@ -50,8 +45,9 @@ public class DoctorService {
     private PatientService patientService;
     public static final String FLASK_SERVER_URL = "http://localhost:8500";
     private final RestTemplate restTemplate = new RestTemplate();
+    private final PasswordEncoder passwordEncoder=  new BCryptPasswordEncoder();
 
-    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, RabbitMQController rabbitMQController, AppointmentsRepository appointmentsRepository) {
+    public DoctorService(DoctorRepository doctorRepository, PatientRepository patientRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, RabbitMQController rabbitMQController, AppointmentsRepository appointmentsRepository, PasswordEncoder passwordEncoder) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.usersRepository = usersRepository;
@@ -76,7 +72,7 @@ public class DoctorService {
             doctorDTO.setHmo(doctor.getHmo());
             doctorDTO.setExperience(doctor.getExperience());
             doctorDTO.setHospital(doctor.getHospital());
-            doctorDTO.setSpecialization(doctor.getSpecialization());
+            doctorDTO.setSpecialization(doctor.getSpecialization().toString());
             doctorDTO.setBirthDay(doctor.getBirthDay());
             doctorDTO.setImageData(doctor.getImageData());
             doctorDTO.setInquiriesList(doctor.getInquiries());
@@ -97,7 +93,7 @@ public class DoctorService {
             doctorShortDTO.setHmo(doctor.getHmo());
             doctorShortDTO.setExperience(doctor.getExperience());
             doctorShortDTO.setHospital(doctor.getHospital());
-            doctorShortDTO.setSpecialization(doctor.getSpecialization());
+            doctorShortDTO.setSpecialization(doctor.getSpecialization().toString());
             doctorShortDTO.setImageData(doctor.getImageData());
             return doctorShortDTO;
         }
@@ -118,7 +114,7 @@ public class DoctorService {
         doctor.setHmo(doctorDTO.getHmo());
         doctor.setExperience(doctorDTO.getExperience());
         doctor.setHospital(doctorDTO.getHospital());
-        doctor.setSpecialization(doctorDTO.getSpecialization());
+        doctor.setSpecialization(Specialization.valueOf(doctorDTO.getSpecialization()));
         doctor.setBirthDay(doctorDTO.getBirthDay());
         doctor.setInquiries(doctorDTO.getInquiriesList());
         doctor.setPatients(doctorDTO.getPatients());
@@ -446,11 +442,23 @@ public class DoctorService {
                 Patient patient = iterator.next();
                 if (patient.getId().equals(patientId)) {
                     iterator.remove();
+                    List<Doctor> doctors = patient.getDoctors();
+                    Iterator<Doctor> iterator1 = doctors.iterator();
+                    while(iterator1.hasNext()){
+                        Doctor doctor1 = iterator1.next();
+                        if(doctor1.getId().equals(doctorId)){
+                            iterator1.remove();
+                            break;
+                        }
+                    }
+                    patient.setDoctors(doctors);
+                    patientRepository.save(patient);
                     break;
                 }
             }
             doctor.setPatients(patients);
         }
+        doctorRepository.save(optionalDoctor.get());
     }
 
     @Transactional

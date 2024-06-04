@@ -28,12 +28,10 @@ public class CustomLogoutHandler implements LogoutSuccessHandler {
 
         String token = request.getHeader(JwtProperties.HEADER_STRING).
                 substring(JwtProperties.HEADER_STRING.length());
-        System.out.println("--------------------------------------");
+        System.out.println("--------------------------------------LOGOUT");
         tokenBlacklistService.addToBlacklist(token);
 
         if (authentication != null)
             System.out.println("User logged out: " + authentication.getName());
-
-
     }
 }

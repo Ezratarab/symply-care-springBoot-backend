@@ -1,7 +1,6 @@
 package com.example.symply_care.config;
 
 
-import com.example.symply_care.controller.RabbitMQController;
 import com.example.symply_care.service.CustomLogoutHandler;
 import com.example.symply_care.service.CustomUserDetailsService;
 import com.example.symply_care.util.JwtUtil;
@@ -21,15 +20,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration // מסמנים כך מחלקה שיוצרת הרבה beans על מנת שspring יוכל לעבד את כל הbeans ולקשר ביניהם
-@EnableWebSecurity
-@RequiredArgsConstructor
+@EnableWebSecurity// מאפשר לspring למצוא ולהגדיר ראותו כמחלקה הראשית עבור webSecurity
+@RequiredArgsConstructor //לייצר פעולה בונה עבור כל התכונות שהם final
 public class AppSecurityChain {
 
     final private CustomUserDetailsService userDetailsService;
     final private JwtUtil jwtUtil;
     final private CustomLogoutHandler customLogoutHandler;
-
-
 
 
     @Bean //על מנת ליצור עצם של פעולה!! מבלי תוספת קוד
@@ -47,7 +44,7 @@ public class AppSecurityChain {
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/changePassword/**","/contactUs/**","/login/**", "/signup/**", "/doctors/doctors","/doctors/addDoctor","/patients/addPatient").permitAll()
+                        .requestMatchers("/changePassword/**","/contactUs/**","/login/**", "/signup/**", "/doctors/doctors","/doctors/addDoctor","/patients/addPatient","/getSpecializations").permitAll()
                         .requestMatchers("/logout/**", "/refresh_token/**", "/doctors/**", "/rabbitmq/**",
                                 "/patients/**", "/email/**").hasAnyRole("PATIENT", "DOCTOR")
                         .anyRequest().authenticated())

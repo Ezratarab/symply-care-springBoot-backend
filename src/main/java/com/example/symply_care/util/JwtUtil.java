@@ -141,7 +141,6 @@ public class JwtUtil {
             }
         } catch (Exception e) {
         }
-
         PublicKey oldKey = getOldPublicKey();
         try {
             return parseToken(token, oldKey, true);
@@ -153,8 +152,8 @@ public class JwtUtil {
     }
 
     private Claims parseToken(String token, PublicKey publicKey, boolean considerGracePeriod) throws ExpiredJwtException {
-        long clockSkewMillis = considerGracePeriod ? JwtProperties.IDLE_TIME_FOR_REFRESH_TOKEN : 0;//אם יש לו מפתח ציבורי אז לא צריך להזיז את השעון לאחור על מנת לחלץ את המידע
-
+        long clockSkewMillis = considerGracePeriod ? JwtProperties.IDLE_TIME_FOR_REFRESH_TOKEN : 0;
+//במידה והמפתח הציבורי תקף, נצפה שהאסימון יהיה אמין לשניית הבדיקה ללא שינוי השעון, אך אם האסימון ישן מעט ובזמן רענון האסימון התחלפו מפתחות הRSA אז כביכול נזיז את השעון לאחור על מנת שיהיה אפשרי לבדוק
         return Jwts.parser()
                 .setSigningKey(publicKey)
                 .setAllowedClockSkewSeconds(clockSkewMillis / 1000)

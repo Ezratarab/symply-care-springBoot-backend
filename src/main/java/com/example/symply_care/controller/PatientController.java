@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@RestController // @controller + @ResponseBody
 @RequestMapping("/patients")
 @RequiredArgsConstructor
 
@@ -108,6 +108,15 @@ public class PatientController {
             @RequestBody Map<String, Object> inquiryData) {
         List<Inquiries> inquiries = patientService.addInquiryToPatient(patientID, inquiryData);
         return ResponseEntity.ok(inquiries);
+    }
+    @DeleteMapping("/deleteDoctorFromPatient/{patientId}")
+    public ResponseEntity<Void> deletePatientFromDoctor(@PathVariable Long patientId, @RequestBody @Valid Long id) {
+        try {
+            patientService.deleteDoctorFromPatient(patientId,id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/patient/{patientID}/addRole")

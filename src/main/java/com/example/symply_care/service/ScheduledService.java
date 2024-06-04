@@ -35,7 +35,7 @@ public class ScheduledService {
     }
 
     @Transactional
-    @Scheduled(cron = "0 44 15 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     public void deleteOldAppointments() {
         LocalDateTime currentDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -49,7 +49,6 @@ public class ScheduledService {
                 oldAppointments.add(appointment);
             }
         }
-
         for (Appointments appointment : oldAppointments) {
             Patient patient = appointment.getPatient();
             List<Appointments> patientAppointments = patient.getAppointments();

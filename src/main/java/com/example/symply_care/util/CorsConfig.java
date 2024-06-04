@@ -14,19 +14,19 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/doctors/**")
                 .allowedOrigins(ALLOWED_ORIGIN)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*") // Allowed request headers
+                .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
         registry.addMapping("/patients/**")
                 .allowedOrigins(ALLOWED_ORIGIN)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*") // Allowed request headers
+                .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
         registry.addMapping("/**")
                 .allowedOrigins(ALLOWED_ORIGIN)
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*") // Allowed request headers
+                .allowedMethods("POST","GET","PUT")
+                .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
     }

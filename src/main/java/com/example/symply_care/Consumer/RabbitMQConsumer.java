@@ -35,7 +35,7 @@ public class RabbitMQConsumer {
     @RabbitListener(queues = {"${rabbitmq.queue.name}"})
     public void consume(RabbitMQMessage rabbitMQMessage) throws Exception {
         LOGGER.info(String.format("Recieved message -> %s", rabbitMQMessage.toString()));
-if(rabbitMQMessage.getEmail()==null){
+        if(rabbitMQMessage.getEmail()==null){
         // Get doctor info
         ResponseEntity<DoctorDTO> doctorResponseEntity = doctorController.getDoctorByEmail(rabbitMQMessage.getDoctorEmail());
         DoctorDTO doctor = doctorResponseEntity.getBody();

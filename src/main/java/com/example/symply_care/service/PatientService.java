@@ -5,20 +5,16 @@ import com.example.symply_care.dto.DoctorDTO;
 import com.example.symply_care.dto.PatientDTO;
 import com.example.symply_care.entity.*;
 import com.example.symply_care.repository.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -26,7 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Valid
 public class PatientService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
@@ -39,8 +34,10 @@ public class PatientService {
     @Autowired
     @Lazy
     private DoctorService doctorService;
+    private final PasswordEncoder passwordEncoder=  new BCryptPasswordEncoder();
 
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository, RabbitMQController rabbitMQController) {
+
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UsersRepository usersRepository, RoleRepository roleRepository, InquiriesRepository inquiriesRepository, AppointmentsRepository appointmentsRepository, RabbitMQController rabbitMQController, PasswordEncoder passwordEncoder) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.usersRepository = usersRepository;
@@ -314,6 +311,40 @@ public class PatientService {
             throw new NoSuchElementException("Patient not found with id: " + patientID);
         }
     }
+    @Transactional
+    public void deleteDoctorFromPatient(Long patientId, Long doctorId) {
+        if (patientId == null || doctorId == null) {
+            return;
+        }
+
+        Optional<Patient> optionalPatient = patientRepository.findById(patientId);
+        if (optionalPatient.isPresent()) {
+            Patient patient = optionalPatient.get();
+            List<Doctor> doctors = patient.getDoctors();
+
+            Iterator<Doctor> iterator = doctors.iterator();
+            while (iterator.hasNext()) {
+                Doctor doctor = iterator.next();
+                if (doctor.getId().equals(doctorId)) {
+                    iterator.remove();
+                    List<Patient> patients = doctor.getPatients();
+                    Iterator<Patient> iterator2 = patients.iterator();
+                    while(iterator2.hasNext()){
+                        Patient patient1 = iterator2.next();
+                        if(patient1.getId().equals(patientId)){
+                            iterator2.remove();
+                        }
+                    }
+                    doctor.setPatients(patients);
+                    doctorRepository.save(doctor);
+                    break;
+                }
+            }
+            patient.setDoctors(doctors);
+            patientRepository.save(patient);
+        }
+    }
+
 
     @Transactional
     public List<Inquiries> addInquiryToPatient(Long patientID, Map<String, Object> inquiryData) {
