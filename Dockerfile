@@ -2,7 +2,7 @@
 FROM openjdk:17-jdk-alpine
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /
 
 # Copy the local code to the container's workspace
 COPY . .
