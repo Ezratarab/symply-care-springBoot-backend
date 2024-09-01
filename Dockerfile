@@ -1,20 +1,11 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-alpine
+# Use a base image with OpenJDK
+FROM openjdk:17-jdk-slim
 
-# Set the working directory in the container
-WORKDIR /
+# Set the working directory inside the container
+WORKDIR /app
 
-# Copy the local code to the container's workspace
-COPY . .
+# Copy the generated JAR file from the Maven build into the container
+COPY target/SYMPly_Care-0.0.1-SNAPSHOT.jar /app/symply-care-backend.jar
 
-# Use Maven to build the application (if applicable)
-# RUN mvn clean package -DskipTests
-
-# If you already have the JAR file, copy it directly
-# COPY target/your-application.jar /app/your-application.jar
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "target/your-application.jar"]
-
-# Expose port (adjust based on your application)
-EXPOSE 8080
+# Specify the command to run your application
+CMD ["java", "-jar", "symply-care-backend.jar"]
