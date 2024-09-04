@@ -20,9 +20,63 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: SPRING_DATASOURCE_URL
-          value: jdbc:mysql://mysql-service.default.svc.cluster.local:3306/symply_care?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
-        - name: SPRING_DATASOURCE_USERNAME
-          value: root
-        - name: SPRING_DATASOURCE_PASSWORD
-          value: ezra5385
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_URL
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_USERNAME
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_PASSWORD
+        - name: MAIL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: MAIL_USERNAME
+        - name: MAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: MAIL_PASSWORD
+        - name: RABBITMQ_HOST
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RABBITMQ_HOST
+        - name: RABBITMQ_PORT
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RABBITMQ_PORT
+        - name: RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RABBITMQ_USERNAME
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RABBITMQ_PASSWORD
+        - name: RABBITMQ_QUEUE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RABBITMQ_QUEUE_NAME
+        - name: RABBITMQ_EXCHANGE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RABBITMQ_EXCHANGE_NAME
+        - name: RABBITMQ_ROUTING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RABBITMQ_ROUTING_KEY
