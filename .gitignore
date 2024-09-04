@@ -33,3 +33,8 @@ build/
 
 ### VS Code ###
 .vscode/
+.vscode-server/
+.zsh_history
+.wget-hsts
+.zcompdump*
+.zshrc
