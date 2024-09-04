@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: symply-care-backend-deployment
+  labels:
+    app: symply-care-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: symply-care-backend
+  template:
+    metadata:
+      labels:
+        app: symply-care-backend
+    spec:
+      containers:
+      - name: symply-care-backend-container
+        image: ezratarab/symply_care_spring:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql-service.default.svc.cluster.local:3306/symply_care?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+        - name: SPRING_DATASOURCE_USERNAME
+          value: root
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: ezra5385
