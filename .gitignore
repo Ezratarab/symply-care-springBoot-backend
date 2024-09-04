@@ -38,3 +38,5 @@ build/
 .wget-hsts
 .zcompdump*
 .zshrc
+automate-secret.sh
+secret.yaml
