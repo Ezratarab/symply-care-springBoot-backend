@@ -6,6 +6,38 @@ It also implements **JWT (JSON Web Token)** authentication for secure access and
 
 ![logo](./symply_care_new.png)
 
+<table align="center">
+  <tr>
+    <td align="center" width="33%">
+      <a href="[https://github.com/Ezratarab/symply-care-springBoot-backend]">
+        <img src="https://img.shields.io/badge/Backend-Spring_Boot-6DB33F?style=for-the-badge&logo=spring" alt="Backend">
+      </a>
+      <br>
+      <sub><b>API & Data Management</b></sub>
+      <br>
+      <sub>Java • Spring Boot • MySQL • RabbitMQ</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="[https://github.com/Ezratarab/symply-care-react-frontend]">
+        <img src="https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react" alt="Frontend">
+      </a>
+      <br>
+      <sub><b>User Interface</b></sub>
+      <br>
+      <sub>React • Next.js • TypeScript • Tailwind</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="[https://github.com/Ezratarab/symply-care-ML]">
+        <img src="https://img.shields.io/badge/ML_Service-Flask-000000?style=for-the-badge&logo=flask" alt="ML Service">
+      </a>
+      <br>
+      <sub><b>Predictive Engine</b></sub>
+      <br>
+      <sub>Python • Scikit-learn • TensorFlow • RabbitMQ</sub>
+    </td>
+  </tr>
+</table>
+
 ---
 
 ## 🚀 Technologies Used
