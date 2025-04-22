@@ -2,7 +2,10 @@
 
 Symply-Care is a comprehensive healthcare platform designed to streamline patient management, appointment scheduling, and predictive analytics through seamless integration with microservices.
 
-This backend service, built with Spring Boot, forms the core of the system by exposing RESTful API endpoints, handling business logic, persisting data in relational databases, and enabling asynchronous communication with other components via RabbitMQ.
+This backend service, built with Spring Boot, forms the core of the system by exposing RESTful API endpoints, handling business logic, persisting data in relational databases, and enabling asynchronous communication with other components via RabbitMQ.  
+
+It also implements **JWT (JSON Web Token)** authentication for secure access and uses **DTO (Data Transfer Object)** patterns to safely structure and validate data between layers.
+
 ---
 
 ## 🚀 Technologies Used
@@ -10,6 +13,7 @@ This backend service, built with Spring Boot, forms the core of the system by ex
 - Java 17
 - Spring Boot
 - Spring Data JPA
+- JWT
 - RabbitMQ
 - MySQL / PostgreSQL
 - Docker
