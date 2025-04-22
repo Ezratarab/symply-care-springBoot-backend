@@ -1,7 +1,8 @@
 # 📆 Symply-Care – Backend (Spring Boot)
 
-This is the backend service for **Symply-Care**, built with Spring Boot. It handles the core business logic, API endpoints, database interactions, and communication with other services using RabbitMQ.
+Symply-Care is a comprehensive healthcare platform designed to streamline patient management, appointment scheduling, and predictive analytics through seamless integration with microservices.
 
+This backend service, built with Spring Boot, forms the core of the system by exposing RESTful API endpoints, handling business logic, persisting data in relational databases, and enabling asynchronous communication with other components via RabbitMQ.
 ---
 
 ## 🚀 Technologies Used
